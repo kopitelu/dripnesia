@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dripnesia Brew Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --lav-bg:#F7F3FF;
+    --ink:#18151D;
+    --muted:#73707A;
+    --border:#E7E3EB;
+    --purple:#6F4AA8;
+    --purple-deep:#4E2B83;
+    --selected-lav:#EEE6FA;
+    --soft-purple:#DCCCF4;
+    --iced:#8BA3C7;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{ max-width:1180px; margin:0 auto; padding:28px 20px 80px; }
+
+  /* HEADER */
+  .header{ position:relative; padding-bottom:20px; margin-bottom:26px; border-bottom:1px solid var(--border); overflow:hidden; }
+  .header-rings{ position:absolute; top:-40px; right:-40px; width:220px; height:220px; opacity:0.35; pointer-events:none; }
+  .h-title{ font-size:26px; font-weight:800; letter-spacing:-0.01em; margin:0 0 6px; position:relative; display:inline-block; }
+  .h-title::after{ content:''; position:absolute; left:0; bottom:-6px; width:38px; height:3px; background:var(--purple); border-radius:2px; }
+  .h-sub{ font-size:13.5px; color:var(--muted); margin:14px 0 8px; max-width:520px; line-height:1.5; }
+  .tagline-badge{
+    display:inline-block; margin-left:10px; font-size:11px; font-weight:700; color:var(--purple);
+    background:var(--lav-bg); border:1px solid var(--soft-purple); border-radius:20px;
+    padding:4px 11px; letter-spacing:0.01em; position:relative; top:-6px;
+  }
+  @media (max-width:520px){ .tagline-badge{ display:block; margin:8px 0 0; width:max-content; top:0; } }
+  .h-link{ font-size:12.5px; color:var(--purple); text-decoration:underline; text-underline-offset:2px; cursor:pointer; font-weight:600; background:none; border:none; padding:0; }
+  .h-howto{ display:none; font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.6; background:var(--lav-bg); border:1px solid var(--soft-purple); border-radius:var(--radius); padding:12px 14px; max-width:520px; }
+  .h-howto.show{ display:block; }
+
+  /* LAYOUT */
+  .planner{ display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; }
+  @media (max-width:920px){ .planner{ grid-template-columns:1fr; } }
+
+  .panel-block{ margin-bottom:22px; }
+  .section-heading{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink); margin-bottom:10px; position:relative; padding-bottom:6px; }
+  .section-heading::after{ content:''; position:absolute; left:0; bottom:0; width:22px; height:2px; background:var(--purple); }
+  .section-sub{ font-size:12px; color:var(--muted); margin:-4px 0 10px; line-height:1.5; }
+
+  /* TABS */
+  .tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tab{
+    background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
+    padding:9px 14px; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;
+    transition:all .12s ease; white-space:nowrap;
+  }
+  .tab:hover{ background:var(--lav-bg); border-color:var(--soft-purple); }
+  .tab.active{ background:var(--purple); border-color:var(--purple); color:#fff; }
+
+  /* SEGMENTED */
+  .segmented{ display:flex; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; width:max-content; }
+  .seg-opt{
+    padding:9px 18px; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;
+    background:var(--bg); display:flex; align-items:center; gap:6px; transition:all .12s ease;
+  }
+  .seg-opt + .seg-opt{ border-left:1px solid var(--border); }
+  .seg-opt.active{ background:var(--purple); color:#fff; }
+  .drop-icon{ width:9px; height:11px; }
+
+  /* PARAMS */
+  .big-display{ display:flex; align-items:baseline; gap:6px; margin-bottom:10px; }
+  .big-num{ font-family:'JetBrains Mono', monospace; font-size:34px; font-weight:700; color:var(--purple); }
+  .big-unit{ font-size:13px; color:var(--muted); font-weight:600; }
+  input[type=range]{
+    -webkit-appearance:none; width:100%; height:4px; border-radius:2px; background:var(--border); margin-bottom:4px; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--purple); cursor:pointer; border:2px solid #fff; box-shadow:0 0 0 1px var(--purple);
+  }
+  input[type=range]::-moz-range-thumb{ width:16px; height:16px; border-radius:50%; background:var(--purple); border:2px solid #fff; box-shadow:0 0 0 1px var(--purple); cursor:pointer; }
+  .slider-endcaps{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted); margin-bottom:12px; }
+  .chip-row{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .chip{
+    background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
+    padding:7px 13px; font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;
+  }
+  .chip.text{ font-family:'Inter', sans-serif; }
+  .chip:hover{ border-color:var(--soft-purple); background:var(--lav-bg); }
+  .chip.active{ background:var(--selected-lav); border-color:var(--purple); color:var(--purple-deep); }
+  .custom-input-row{ display:flex; align-items:center; gap:8px; }
+  .custom-input-row input[type=number]{
+    width:90px; border:1px solid var(--border); border-radius:var(--radius); padding:8px 10px;
+    font-family:'JetBrains Mono', monospace; font-size:13.5px; color:var(--ink);
+  }
+  .custom-input-row input[type=number]:focus{ outline:none; border-color:var(--purple); }
+  .custom-input-row label{ font-size:12.5px; color:var(--muted); }
+
+  .hint-box{ font-size:12px; color:var(--muted); line-height:1.6; margin-top:6px; }
+  .hint-box b{ color:var(--purple-deep); }
+
+  /* ADVANCED */
+  .adv-toggle{
+    display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--purple);
+    cursor:pointer; user-select:none; margin:14px 0 10px;
+  }
+  .adv-toggle .car{ transition:transform .15s ease; font-size:11px; }
+  .adv-toggle.open .car{ transform:rotate(90deg); }
+  .adv-body{ display:none; border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; background:var(--lav-bg); }
+  .adv-body.show{ display:block; }
+  .adv-row{ margin-bottom:14px; }
+  .adv-row:last-child{ margin-bottom:0; }
+  .adv-label{ font-size:12px; font-weight:600; color:var(--ink); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .adv-readonly{ font-family:'JetBrains Mono', monospace; font-size:14px; font-weight:700; color:var(--ink); }
+  .pourcount-row{ display:flex; gap:8px; }
+
+  /* RECIPE SHEET */
+  .sheet{ border:1px solid var(--border); border-radius:var(--radius); padding:22px 22px 24px; position:sticky; top:20px; }
+  .sheet-eyebrow{ font-size:11.5px; font-weight:700; color:var(--iced); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
+  .sheet-eyebrow.hot{ color:var(--purple); }
+  .sheet-title{ font-size:21px; font-weight:800; margin:0 0 16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+
+  .keynum-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin-bottom:18px; }
+  .kn-label{ font-size:11px; color:var(--muted); font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.03em; }
+  .kn-value{ font-family:'JetBrains Mono', monospace; font-size:20px; font-weight:700; color:var(--ink); }
+  .kn-value.purple{ color:var(--purple); }
+  .kn-value.iced{ color:var(--iced); }
+  .kn.full{ grid-column:1/-1; padding-top:12px; border-top:1px dashed var(--border); }
+
+  .subrow{ display:flex; gap:20px; padding:14px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:18px; flex-wrap:wrap; }
+  .subrow .sr-item{ flex:1; min-width:90px; }
+  .sr-label{ font-size:11px; color:var(--muted); font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.03em; }
+  .sr-value{ font-family:'JetBrains Mono', monospace; font-size:14.5px; font-weight:700; }
+
+  table.brewtable{ width:100%; border-collapse:collapse; margin-bottom:18px; }
+  table.brewtable th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted); font-weight:700; padding:0 8px 8px 0; border-bottom:1px solid var(--border); }
+  table.brewtable td{ font-size:13px; padding:9px 8px 9px 0; border-bottom:1px dashed var(--border); }
+  table.brewtable td.mono{ font-family:'JetBrains Mono', monospace; font-weight:700; }
+  table.brewtable tr:last-child td{ border-bottom:none; }
+
+  .tips-box{ font-size:13px; line-height:1.6; color:var(--ink); background:var(--lav-bg); border:1px solid var(--soft-purple); border-radius:var(--radius); padding:12px 14px; margin-bottom:14px; }
+  .flavor-block{ margin-bottom:16px; }
+  .flavor-block .fb-label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink); margin-bottom:6px; }
+  .flavor-block p{ font-size:13px; line-height:1.6; color:var(--ink); margin:0 0 4px; }
+  .flavor-block .fb-note{ font-size:12.5px; color:var(--muted); font-style:normal; }
+
+  /* TROUBLESHOOT */
+  .ts-block{ margin-bottom:18px; }
+  .ts-item{ border-top:1px solid var(--border); }
+  .ts-item:first-child{ border-top:none; }
+  .ts-q{
+    width:100%; background:none; border:none; color:var(--ink); font-family:'Inter',sans-serif;
+    font-size:13px; font-weight:600; text-align:left; padding:11px 0; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .ts-q .chev{ color:var(--purple); font-size:15px; font-weight:700; transition:transform .2s ease; }
+  .ts-item.open .chev{ transform:rotate(45deg); }
+  .ts-a{ max-height:0; overflow:hidden; transition:max-height .25s ease; font-size:12.5px; color:var(--muted); line-height:1.6; }
+  .ts-item.open .ts-a{ max-height:100px; }
+  .ts-a-inner{ padding:0 0 12px; }
+
+  /* BUTTONS */
+  .action-row{ display:flex; gap:10px; margin-bottom:12px; }
+  .btn{
+    font-family:'Inter', sans-serif; font-weight:700; font-size:13.5px; border-radius:var(--radius);
+    padding:12px 18px; cursor:pointer; transition:all .12s ease; flex:1; text-align:center; border:1.5px solid var(--purple);
+  }
+  .btn.primary{ background:var(--purple); color:#fff; }
+  .btn.primary:hover{ background:var(--purple-deep); border-color:var(--purple-deep); }
+  .btn.secondary{ background:#fff; color:var(--purple); }
+  .btn.secondary:hover{ background:var(--lav-bg); }
+  .restart-link{ display:block; text-align:center; font-size:12.5px; color:var(--muted); text-decoration:underline; text-underline-offset:2px; cursor:pointer; background:none; border:none; width:100%; padding:6px; }
+  .restart-link:hover{ color:var(--purple); }
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff; font-size:13px; font-weight:600;
+    padding:12px 18px; border-radius:var(--radius); opacity:0; pointer-events:none; transition:all .25s ease;
+    z-index:60; box-shadow:0 8px 24px rgba(0,0,0,0.18);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* SAVED MODAL */
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(24,21,29,0.4); z-index:70; align-items:flex-start; justify-content:center; padding:60px 20px; }
+  .modal-overlay.show{ display:flex; }
+  .modal{ background:#fff; border-radius:var(--radius); max-width:440px; width:100%; padding:20px 20px 8px; max-height:70vh; overflow-y:auto; }
+  .modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .modal-head h3{ font-size:16px; margin:0; }
+  .modal-close{ background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer; }
+  .saved-item{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border); gap:10px; }
+  .saved-item:first-child{ border-top:none; }
+  .saved-main{ flex:1; cursor:pointer; }
+  .saved-name{ font-size:13.5px; font-weight:700; }
+  .saved-sub{ font-size:11.5px; color:var(--muted); }
+  .saved-del{ background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer; padding:4px 8px; }
+  .saved-del:hover{ color:var(--purple); }
+  .empty-saved{ font-size:13px; color:var(--muted); padding:16px 0; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <svg class="header-rings" viewBox="0 0 220 220"><circle cx="180" cy="40" r="30" fill="none" stroke="#6F4AA8" stroke-width="1.2"/><circle cx="180" cy="40" r="55" fill="none" stroke="#6F4AA8" stroke-width="1"/><circle cx="180" cy="40" r="80" fill="none" stroke="#6F4AA8" stroke-width="0.8"/></svg>
+    <h1 class="h-title">Dripnesia Brew Guide</h1>
+    <span class="tagline-badge">Brew Your Way. It's All Good.</span>
+    <div class="h-sub">Atur resep dan langkah seduh sesuai alat, dosis kopi, dan gaya seduhmu.<br>Nggak ada seduhan yang gagal — semua eksperimen itu langkah buat nemuin rasa favoritmu.</div>
+    <button class="h-link" onclick="toggleHowto()">Cara menggunakan Brew Guide →</button>
+    <div class="h-howto" id="howtoBox">Pilih alat seduh, mode minuman, dosis, dan rasio di kolom kiri. Kalau bingung mau pakai rasio berapa, tinggal pilih salah satu gaya resep — semuanya diatur otomatis. Kartu resep di kanan selalu mengikuti perubahan yang kamu buat.</div>
+  </div>
+
+  <div class="planner">
+    <!-- LEFT: CONTROLS -->
+    <div>
+      <div class="panel-block">
+        <div class="section-heading">Alat seduh</div>
+        <div class="tabs" id="brewerTabs"></div>
+      </div>
+
+      <div class="panel-block">
+        <div class="section-heading">Mode minuman</div>
+        <div class="segmented" id="drinkSeg"></div>
+      </div>
+
+      <div class="panel-block" id="icePlacementBlock" style="display:none;">
+        <div class="section-heading">Taruh es di</div>
+        <div class="segmented" id="icePlacementSeg"></div>
+        <div class="hint-box" id="icePlacementHint"></div>
+      </div>
+
+      <div class="panel-block">
+        <div class="section-heading">Dosis kopi</div>
+        <div class="big-display"><span class="big-num" id="doseNum">15</span><span class="big-unit">gram</span></div>
+        <input type="range" id="doseSlider" min="10" max="20" step="0.5" value="15">
+        <div class="chip-row" id="doseChips" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="panel-block">
+        <div class="section-heading">Rasio</div>
+        <div class="big-display"><span class="big-unit">1 :</span><span class="big-num" id="ratioNum">15</span></div>
+        <input type="range" id="ratioSlider" min="10" max="20" step="0.5" value="15" title="Geser untuk mengatur seberapa pekat atau encer seduhanmu.">
+        <div class="slider-endcaps"><span>Lebih pekat</span><span>Lebih encer</span></div>
+        <div class="chip-row" id="ratioPresetChips"></div>
+        <div class="hint-box" id="ratioHint">Masih bingung mau pilih rasio berapa? Coba salah satu <b>gaya resep</b> di bawah — rasio di atas otomatis menyesuaikan.</div>
+      </div>
+
+      <div class="panel-block">
+        <div class="section-heading">Gaya resep</div>
+        <div class="section-sub">Opsional — pilih satu untuk mengatur rasio, grind, suhu, dan jumlah tuangan sekaligus. Rasio manual di atas jadi tidak berlaku selama gaya resep aktif.</div>
+        <div class="tabs" id="styleTabs"></div>
+
+        <div class="adv-toggle" id="advToggle" onclick="toggleAdv()"><span class="car">▶</span> Pengaturan lanjutan</div>
+        <div class="adv-body" id="advBody">
+          <div class="adv-row">
+            <div class="adv-label">Air bloom (dihitung otomatis)</div>
+            <div class="adv-readonly" id="bloomReadout">— g</div>
+          </div>
+          <div class="adv-row" id="pourCountRow">
+            <div class="adv-label">Jumlah tuangan</div>
+            <div class="pourcount-row" id="pourCountChips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: LIVE RECIPE SHEET -->
+    <div>
+      <div class="sheet" id="sheetOutput"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="savedOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3>Resep Tersimpan</h3><button class="modal-close" onclick="closeSaved()">×</button></div>
+    <div id="savedList"></div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA MODEL ============ */
+const BREWERS = {
+  cone:        { key:'cone', name:'Cone Dripper', sub:'V60 · Kono · Origami Cone', family:'pourover', grindBase:'Medium-Fine', tempRange:[90,94], bloomMult:2.2, character:'clean dengan clarity tinggi, mudah menonjolkan acidity', ratioBounds:[10,20], customPourDefault:3 },
+  flat:        { key:'flat', name:'Flat-Bottom', sub:'Kalita Wave · Orea · April Brewer · Origami Flat', family:'pourover', grindBase:'Medium', tempRange:[88,93], bloomMult:2.0, character:'sweetness lebih bulat, body lebih terasa, hasil lebih stabil', ratioBounds:[10,20], customPourDefault:2 },
+  frenchpress: { key:'frenchpress', name:'French Press', sub:'Full immersion', family:'immersion', grindBase:'Coarse', tempRange:[93,96], bloomMult:null, character:'body tebal, simpel, paling forgiving untuk pemula', ratioBounds:[10,20] },
+  aeropress:   { key:'aeropress', name:'AeroPress', sub:'Immersion + tekanan', family:'aeropress', grindBase:'Medium-Fine', tempRange:[82,94], bloomMult:2.0, character:'fleksibel, bisa bold atau clean tergantung resep', ratioBounds:[10,20] }
+};
+
+const STYLES = {
+  cone: [
+    { key:'recommended', name:'Dripnesia Recommended', ratio:15,   iced:false, pourDefault:3, pourAdj:true,  grind:0,  temp:'mid',  brewTime:'2:30–3:00', tips:'Gerakan tuang melingkar dan merata menjaga ekstraksi tetap seimbang.' },
+    { key:'easy',        name:'Easy Single Pour',      ratio:16,   iced:false, pourDefault:1, pourAdj:false, grind:-1, temp:'low',  brewTime:'2:00–2:30', tips:'Satu tuangan lambat lebih mudah dikontrol untuk pemula.' },
+    { key:'classic',     name:'Classic 3-Pour',        ratio:15,   iced:false, pourDefault:3, pourAdj:false, grind:0,  temp:'mid',  brewTime:'2:30–3:00', tips:'Proporsi klasik yang umum dipakai banyak brewer V60.' },
+    { key:'bold',        name:'Bold & Comfort',        ratio:14,   iced:false, pourDefault:3, pourAdj:true,  grind:1,  temp:'high', brewTime:'3:00–3:30', tips:'Tuangan bertahap dengan agitasi ringan menghasilkan body lebih tebal.' },
+    { key:'iced',        name:'Iced Flash Brew',       ratio:15.5, iced:true,  pourDefault:2, pourAdj:false, grind:0,  temp:'high', icePct:0.35, brewTime:'1:30–2:00', tips:'Diseduh langsung di atas es supaya rasa tetap segar dan tidak encer.' }
+  ],
+  flat: [
+    { key:'recommended', name:'Dripnesia Recommended', ratio:15,   iced:false, pourDefault:2, pourAdj:true,  grind:0,  temp:'mid',  brewTime:'3:00–3:30', tips:'Dua tuangan besar sudah cukup karena dasar dripper yang rata.' },
+    { key:'easy',        name:'Easy Two Pour',         ratio:15.5, iced:false, pourDefault:2, pourAdj:false, grind:-1, temp:'low',  brewTime:'2:30–3:00', tips:'Dua tuangan sederhana, cocok untuk seduhan harian.' },
+    { key:'classic',     name:'Classic Pulse Pour',    ratio:15,   iced:false, pourDefault:4, pourAdj:false, grind:0,  temp:'mid',  brewTime:'3:00–3:40', tips:'Tuangan kecil berulang (pulse) menjaga level air tetap stabil.' },
+    { key:'bold',        name:'Bold & Rounded',        ratio:14.5, iced:false, pourDefault:3, pourAdj:true,  grind:1,  temp:'high', brewTime:'3:30–4:00', tips:'Body lebih bulat dan pekat dengan tuangan lebih rapat.' },
+    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourDefault:2, pourAdj:false, grind:0,  temp:'high', icePct:0.35, brewTime:'2:00–2:30', tips:'Sama seperti versi cone, diseduh langsung di atas es.' }
+  ],
+  frenchpress: [
+    { key:'recommended', name:'Dripnesia Recommended',   ratio:15, iced:false, grind:0,  temp:'mid',  brewTime:'4:00 + rehat 2 menit', tips:'Pecahkan crust dan buang ampas mengapung untuk cangkir lebih bersih.' },
+    { key:'gentle',       name:'Clean & Gentle',          ratio:16, iced:false, grind:-1, temp:'low',  brewTime:'4:00', tips:'Steep lebih singkat menghasilkan cup yang lebih ringan.' },
+    { key:'iced',         name:'French Press Over Ice',   ratio:14, iced:true,  grind:0,  temp:'high', icePct:0.3, brewTime:'3:00', tips:'Diseduh lebih pekat, lalu dituang langsung di atas es.' }
+  ],
+  aeropress: [
+    { key:'recommended', name:'Dripnesia Recommended', ratio:15, iced:false, grind:0,  temp:'mid',  brewTime:'1:30–2:00', tips:'Dua tahap tuang dengan tekan perlahan menjaga rasa tetap seimbang.' },
+    { key:'bold',         name:'Bold Concentrate',       ratio:12, iced:false, grind:1,  temp:'high', brewTime:'2:30–3:00', tips:'Steep lebih lama menghasilkan konsentrat yang lebih pekat.' },
+    { key:'iced',         name:'Iced AeroPress',         ratio:14, iced:true,  grind:0,  temp:'high', icePct:0.35, brewTime:'1:00–1:30', tips:'Ditekan langsung ke atas es supaya suhu langsung turun.' }
+  ]
+};
+
+const GRIND_STEPS = ['Coarse','Medium-Coarse','Medium','Medium-Fine','Fine'];
+
+const TROUBLESHOOT = [
+  { q:'Terlalu asam', a:'Giling sedikit lebih halus atau naikkan suhu air 1–2°C.' },
+  { q:'Terlalu pahit', a:'Giling sedikit lebih kasar atau turunkan suhu air 1–2°C.' },
+  { q:'Terlalu encer', a:'Kurangi air 10–15 g atau gunakan rasio yang lebih rapat.' },
+  { q:'Terlalu kuat', a:'Tambah air 10–15 g atau gunakan rasio yang lebih renggang.' },
+  { q:'Terlalu cepat selesai', a:'Giling lebih halus atau tambah sedikit agitasi.' },
+  { q:'Terlalu lama menetes', a:'Giling lebih kasar atau kurangi agitasi saat menuang.' },
+];
+
+/* ============ STATE ============ */
+let state = {
+  brewer: 'cone',
+  drink: 'hot',
+  style: null,        // null = manual/custom ratio mode; otherwise a style key
+  manualRatio: {},    // per-brewer manual ratio memory, e.g { cone: 15.5 }
+  dose: 15,
+  pourCount: null,
+  icePlacement: 'start', // 'start' = ice in server first (recommended), 'end' = pour over ice after brewing
+  advOpen: false
+};
+
+/* ============ HELPERS ============ */
+function currentStyles(){ return STYLES[state.brewer]; }
+function findStyle(key){ return key ? currentStyles().find(s=>s.key===key) : null; }
+function visibleStyles(){
+  return currentStyles().filter(s => state.drink==='iced' ? s.iced : !s.iced);
+}
+function defaultManualRatio(brewerKey){
+  const [lo,hi] = BREWERS[brewerKey].ratioBounds;
+  return +(((lo+hi)/2).toFixed(1));
+}
+function getManualRatio(){
+  if(state.manualRatio[state.brewer]===undefined) state.manualRatio[state.brewer] = defaultManualRatio(state.brewer);
+  return state.manualRatio[state.brewer];
+}
+function pickTemp(brewer, tag, iced){
+  const [lo,hi] = brewer.tempRange;
+  let t;
+  if(tag==='low') t = Math.round(lo + (hi-lo)*0.25);
+  else if(tag==='high') t = hi;
+  else t = Math.round((lo+hi)/2);
+  if(iced && tag==='high') t = Math.min(t+2, 98);
+  return t;
+}
+function grindFor(brewer, adj){
+  let idx = GRIND_STEPS.indexOf(brewer.grindBase);
+  idx = Math.max(0, Math.min(GRIND_STEPS.length-1, idx+adj));
+  return GRIND_STEPS[idx];
+}
+/* derive grind/temp tendency from where a manual ratio sits within the brewer's bounds */
+function tagFromRatio(brewer, ratio){
+  const [lo,hi] = brewer.ratioBounds;
+  const pos = (ratio-lo)/(hi-lo); // 0 = strongest, 1 = lightest
+  if(pos <= 0.33) return { grind:1, temp:'high' };
+  if(pos >= 0.66) return { grind:-1, temp:'low' };
+  return { grind:0, temp:'mid' };
+}
+
+/* ============ RENDER: BREWER TABS ============ */
+function renderBrewerTabs(){
+  const el = document.getElementById('brewerTabs');
+  el.innerHTML='';
+  Object.values(BREWERS).forEach(b=>{
+    const d = document.createElement('div');
+    d.className = 'tab' + (state.brewer===b.key?' active':'');
+    d.textContent = b.name;
+    d.onclick = ()=>{
+      state.brewer = b.key;
+      state.style = null;
+      state.pourCount = null;
+      renderAll();
+    };
+    el.appendChild(d);
+  });
+}
+
+function renderDrinkSeg(){
+  const el = document.getElementById('drinkSeg');
+  el.innerHTML='';
+  const dropSvg = `<svg class="drop-icon" viewBox="0 0 10 12"><path d="M5 0 C5 0 9 6 9 8.5 A4 4 0 0 1 1 8.5 C1 6 5 0 5 0Z" fill="currentColor"/></svg>`;
+  [['hot','Hot',''],['iced','Iced',dropSvg]].forEach(([key,label,icon])=>{
+    const d = document.createElement('div');
+    d.className='seg-opt' + (state.drink===key?' active':'');
+    d.innerHTML = icon + label;
+    d.onclick = ()=>{
+      state.drink = key;
+      const styles = visibleStyles();
+      if(state.style && !styles.find(s=>s.key===state.style)) state.style = null;
+      state.pourCount = null;
+      renderAll();
+    };
+    el.appendChild(d);
+  });
+}
+
+function renderStyleTabs(){
+  const el = document.getElementById('styleTabs');
+  el.innerHTML='';
+  visibleStyles().forEach(s=>{
+    const d = document.createElement('div');
+    d.className='tab' + (state.style===s.key?' active':'');
+    d.textContent = s.name;
+    d.onclick = ()=>{
+      state.style = (state.style===s.key) ? null : s.key; // click again to deselect back to manual
+      state.pourCount = null;
+      renderAll();
+    };
+    el.appendChild(d);
+  });
+}
+
+/* ============ RENDER: ICE PLACEMENT ============ */
+function renderIcePlacement(){
+  const brewer = BREWERS[state.brewer];
+  const block = document.getElementById('icePlacementBlock');
+  const applies = state.drink==='iced' && brewer.family==='pourover';
+  block.style.display = applies ? '' : 'none';
+  if(!applies) return;
+
+  const el = document.getElementById('icePlacementSeg');
+  el.innerHTML='';
+  [['start','Awal · rekomendasi'],['end','Akhir · opsional']].forEach(([key,label])=>{
+    const d = document.createElement('div');
+    d.className = 'seg-opt' + (state.icePlacement===key?' active':'');
+    d.textContent = label;
+    d.onclick = ()=>{ state.icePlacement = key; renderAll(); };
+    el.appendChild(d);
+  });
+
+  document.getElementById('icePlacementHint').textContent = state.icePlacement==='start'
+    ? 'Taruh es di server, lalu tare timbangan ke 0 sebelum mulai menuang — jadi angka bloom dan tuangan berikutnya cuma hitung air, tidak ketambah berat es.'
+    : 'Kopi diseduh penuh dulu, baru dituang ke atas es di akhir — rasa sedikit lebih pekat sebelum tercampur es.';
+}
+
+
+function renderDoseControls(){
+  document.getElementById('doseNum').textContent = state.dose;
+  document.getElementById('doseSlider').value = state.dose;
+  const chipsEl = document.getElementById('doseChips');
+  chipsEl.innerHTML='';
+  [10,12,15].forEach(g=>{
+    const c = document.createElement('div');
+    c.className = 'chip' + (state.dose===g?' active':'');
+    c.textContent = g+' g';
+    c.onclick = ()=>{ state.dose=g; renderAll(); };
+    chipsEl.appendChild(c);
+  });
+}
+document.getElementById('doseSlider').addEventListener('input', e=>{
+  state.dose = parseFloat(e.target.value);
+  renderAll();
+});
+
+/* ============ RENDER: RATIO ============ */
+function renderRatioControls(){
+  const brewer = BREWERS[state.brewer];
+  const [lo,hi] = brewer.ratioBounds;
+  const slider = document.getElementById('ratioSlider');
+  slider.min = lo; slider.max = hi; slider.step = 0.5;
+
+  const activeRatio = state.style ? findStyle(state.style).ratio : getManualRatio();
+  slider.value = activeRatio;
+  document.getElementById('ratioNum').textContent = activeRatio;
+
+  const chipsEl = document.getElementById('ratioPresetChips');
+  chipsEl.innerHTML='';
+  const presets = [
+    { label:'Pekat', val:+lo.toFixed(1) },
+    { label:'Seimbang', val:+(((lo+hi)/2).toFixed(1)) },
+    { label:'Ringan', val:+hi.toFixed(1) }
+  ];
+  presets.forEach(p=>{
+    const c = document.createElement('div');
+    c.className = 'chip text' + (!state.style && getManualRatio()===p.val ? ' active':'');
+    c.textContent = p.label;
+    c.onclick = ()=>{ state.style=null; state.manualRatio[state.brewer]=p.val; state.pourCount=null; renderAll(); };
+    chipsEl.appendChild(c);
+  });
+
+  document.getElementById('ratioHint').style.display = state.style ? 'none' : 'block';
+}
+document.getElementById('ratioSlider').addEventListener('input', e=>{
+  state.style = null; // manual adjustment always exits style mode
+  state.manualRatio[state.brewer] = parseFloat(e.target.value);
+  state.pourCount = null;
+  renderAll();
+});
+
+function toggleAdv(){
+  state.advOpen = !state.advOpen;
+  document.getElementById('advToggle').classList.toggle('open', state.advOpen);
+  document.getElementById('advBody').classList.toggle('show', state.advOpen);
+}
+function toggleHowto(){
+  document.getElementById('howtoBox').classList.toggle('show');
+}
+
+/* ============ RECIPE COMPUTE ============ */
+function buildRecipe(){
+  const brewer = BREWERS[state.brewer];
+  const styleObj = findStyle(state.style);
+  const dose = state.dose;
+
+  let name, ratio, isIced, grindAdj, tempTag, pourDefault, pourAdj, brewTime, tips, icePct;
+
+  if(styleObj){
+    name = styleObj.name;
+    ratio = styleObj.ratio;
+    isIced = styleObj.iced;
+    grindAdj = styleObj.grind;
+    tempTag = styleObj.temp;
+    pourDefault = styleObj.pourDefault;
+    pourAdj = styleObj.pourAdj===true;
+    brewTime = styleObj.brewTime;
+    tips = styleObj.tips;
+    icePct = styleObj.icePct || 0.3;
+  } else {
+    name = 'Racikan Sendiri';
+    ratio = getManualRatio();
+    isIced = state.drink==='iced';
+    const tag = tagFromRatio(brewer, ratio);
+    grindAdj = tag.grind;
+    tempTag = tag.temp;
+    pourDefault = brewer.customPourDefault || null;
+    pourAdj = brewer.family==='pourover';
+    brewTime = (STYLES[state.brewer].find(s=>!s.iced) || STYLES[state.brewer][0]).brewTime;
+    tips = 'Racikan manual mengikuti rasio yang kamu pilih sendiri — perhatikan panduan troubleshooting di bawah kalau hasilnya belum pas.';
+    icePct = 0.3;
+  }
+
+  const totalWater = Math.round(dose * ratio);
+  const temp = pickTemp(brewer, tempTag, isIced);
+  const grind = grindFor(brewer, grindAdj);
+
+  let iceGrams=0, hotWater=totalWater;
+  if(isIced){
+    iceGrams = Math.round(totalWater * icePct);
+    hotWater = totalWater - iceGrams;
+  }
+
+  const bloomWater = brewer.bloomMult ? Math.round(dose*brewer.bloomMult) : 0;
+  const pourCount = pourAdj ? (state.pourCount || pourDefault) : pourDefault;
+
+  const table = buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourCount, isIced, brewTime, state.icePlacement);
+
+  return { brewer, name, dose, ratio, totalWater, hotWater, iceGrams, temp, grind, bloomWater, table, isIced, pourAdj, pourCount, brewTime, tips, isCustom: !styleObj };
+}
+
+function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourCount, isIced, brewTime, icePlacement){
+  const rows = [];
+  if(brewer.family==='pourover'){
+    if(isIced && icePlacement==='start'){
+      rows.push({step:'Taruh Es & Tare Timbangan', time:'00:00', add:iceGrams+' g', total:'0 g (tare)'});
+    }
+    let cum = bloomWater;
+    rows.push({step:'Bloom', time:'00:00–00:40', add:bloomWater+' g', total:cum+' g'});
+    const remaining = hotWater - bloomWater;
+    const per = Math.floor(remaining/pourCount);
+    let t = 40;
+    for(let i=0;i<pourCount;i++){
+      const isLast = i===pourCount-1;
+      const amt = isLast ? (hotWater-cum) : per;
+      cum += amt;
+      const t2 = t + 35;
+      const label = pourCount===1 ? 'Tuangan Utama' : (isLast ? 'Tuangan Akhir' : 'Tuangan '+(i+1));
+      rows.push({step:label, time:fmtTime(t)+'–'+fmtTime(t2), add:amt+' g', total:cum+' g'});
+      t = t2;
+    }
+    if(isIced && icePlacement==='end') rows.push({step:'Tuang ke Es', time:'—', add:iceGrams+' g', total:(cum+iceGrams)+' g'});
+  }
+  else if(brewer.family==='immersion'){
+    rows.push({step:'Tuang Air', time:'00:00', add:hotWater+' g', total:hotWater+' g'});
+    rows.push({step:'Steep', time:brewTime, add:'—', total:hotWater+' g'});
+    rows.push({step:'Tekan Plunger', time:'—', add:'—', total:hotWater+' g'});
+    if(isIced) rows.push({step:'Tuang ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
+  }
+  else if(brewer.family==='aeropress'){
+    rows.push({step:'Bloom', time:'00:00–00:30', add:bloomWater+' g', total:bloomWater+' g'});
+    rows.push({step:'Tuang Utama', time:'00:30–00:40', add:(hotWater-bloomWater)+' g', total:hotWater+' g'});
+    rows.push({step:'Steep', time:brewTime, add:'—', total:hotWater+' g'});
+    rows.push({step:'Tekan', time:'—', add:'—', total:hotWater+' g'});
+    if(isIced) rows.push({step:'Tekan ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
+  }
+  return rows;
+}
+function fmtTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+/* ============ RENDER: ADVANCED (bloom + pour count) ============ */
+function renderAdvanced(r){
+  document.getElementById('bloomReadout').textContent = r.bloomWater ? r.bloomWater+' g' : '— (tidak ada tahap bloom)';
+  const pcRow = document.getElementById('pourCountRow');
+  const pcChips = document.getElementById('pourCountChips');
+  if(r.brewer.family==='pourover' && r.pourAdj){
+    pcRow.style.display='';
+    pcChips.innerHTML='';
+    [2,3,4].forEach(n=>{
+      const c = document.createElement('div');
+      c.className='chip' + (r.pourCount===n?' active':'');
+      c.textContent = n+' Tuangan';
+      c.onclick = ()=>{ state.pourCount=n; renderAll(); };
+      pcChips.appendChild(c);
+    });
+  } else {
+    pcRow.style.display='none';
+  }
+}
+
+/* ============ RENDER: SHEET ============ */
+function renderSheet(r){
+  const out = document.getElementById('sheetOutput');
+
+  const keynum = r.isIced ? `
+    <div class="keynum-grid">
+      <div class="kn"><div class="kn-label">Dosis kopi</div><div class="kn-value purple">${r.dose} g</div></div>
+      <div class="kn"><div class="kn-label">Air panas</div><div class="kn-value iced">${r.hotWater} g</div></div>
+      <div class="kn"><div class="kn-label">Es</div><div class="kn-value iced">${r.iceGrams} g</div></div>
+      <div class="kn"><div class="kn-label">Rasio akhir</div><div class="kn-value">1:${r.ratio}</div></div>
+      <div class="kn full"><div class="kn-label">Total minuman jadi</div><div class="kn-value">${r.totalWater} g</div></div>
+    </div>` : `
+    <div class="keynum-grid">
+      <div class="kn"><div class="kn-label">Dosis kopi</div><div class="kn-value purple">${r.dose} g</div></div>
+      <div class="kn"><div class="kn-label">Total air</div><div class="kn-value">${r.totalWater} g</div></div>
+      <div class="kn"><div class="kn-label">Rasio</div><div class="kn-value">1:${r.ratio}</div></div>
+      <div class="kn"><div class="kn-label">Minuman jadi</div><div class="kn-value">${r.totalWater} g</div></div>
+    </div>`;
+
+  const tableRows = r.table.map(row=>`<tr><td>${row.step}</td><td class="mono">${row.time}</td><td class="mono">${row.add}</td><td class="mono">${row.total}</td></tr>`).join('');
+
+  out.innerHTML = `
+    <div class="sheet-eyebrow ${r.isIced?'':'hot'}">${r.isIced?'Iced':'Hot'} · ${r.isCustom ? 'Racikan Sendiri' : r.name}</div>
+    <div class="sheet-title">${r.brewer.name} — ${r.isCustom ? 'Racikan Sendiri' : r.name}</div>
+    ${r.isCustom ? `<div class="hint-box" style="margin:-10px 0 16px;">Racikan sendiri itu sah banget — nggak ada rasio yang "salah". Brew your way, it's all good.</div>` : ''}
+
+    ${keynum}
+
+    <div class="subrow">
+      <div class="sr-item"><div class="sr-label">Grind</div><div class="sr-value">${r.grind}</div></div>
+      <div class="sr-item"><div class="sr-label">Suhu</div><div class="sr-value">${r.temp}°C</div></div>
+      <div class="sr-item"><div class="sr-label">Target waktu</div><div class="sr-value">${r.brewTime}</div></div>
+    </div>
+
+    <table class="brewtable">
+      <thead><tr><th>Step</th><th>Time</th><th>Add</th><th>Total</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+
+    <div class="tips-box"><b>Tips:</b> ${r.tips}</div>
+
+    <div class="flavor-block">
+      <div class="fb-label">Ekspektasi karakter seduhan</div>
+      <p>Potensi rasa yang lebih mudah muncul: ${r.brewer.character}.</p>
+      <div class="fb-note">Angka ini titik awal, bukan patokan mutlak — brew your way, hasilnya tetap sah.</div>
+    </div>
+
+    <div class="ts-block">
+      <div class="section-heading">Troubleshooting</div>
+      <div class="section-sub">Belum pas rasanya? It's all good — itu bukan berarti gagal, cuma tanda buat disesuaikan sedikit.</div>
+      <div id="tsList"></div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn primary" onclick="shareRecipe()">Bagikan Resep</button>
+      <button class="btn secondary" onclick="saveRecipe()">Simpan Resep</button>
+    </div>
+    <button class="restart-link" onclick="openSaved()">Lihat resep tersimpan</button>
+    <button class="restart-link" onclick="resetAll()">Mulai resep baru</button>
+  `;
+
+  const tsList = document.getElementById('tsList');
+  TROUBLESHOOT.forEach((item,i)=>{
+    const d = document.createElement('div');
+    d.className='ts-item';
+    d.innerHTML = `<button class="ts-q" onclick="toggleTs(${i})">${item.q}<span class="chev">+</span></button><div class="ts-a"><div class="ts-a-inner">${item.a}</div></div>`;
+    tsList.appendChild(d);
+  });
+}
+function toggleTs(i){ document.querySelectorAll('.ts-item')[i].classList.toggle('open'); }
+
+/* ============ MASTER RENDER ============ */
+let lastRecipe = null;
+function renderAll(){
+  renderBrewerTabs();
+  renderDrinkSeg();
+  renderIcePlacement();
+  renderDoseControls();
+  renderRatioControls();
+  renderStyleTabs();
+  const r = buildRecipe();
+  lastRecipe = r;
+  renderAdvanced(r);
+  renderSheet(r);
+}
+function resetAll(){
+  state = { brewer:'cone', drink:'hot', style:null, manualRatio:{}, dose:15, pourCount:null, icePlacement:'start', advOpen:false };
+  document.getElementById('advBody').classList.remove('show');
+  document.getElementById('advToggle').classList.remove('open');
+  renderAll();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ============ TEXT EXPORT / SHARE / SAVE ============ */
+function recipeAsText(){
+  const r = lastRecipe;
+  let lines = [];
+  lines.push(`Dripnesia Brew Guide — ${r.brewer.name} · ${r.isCustom?'Racikan Sendiri':r.name} (${r.isIced?'Iced':'Hot'})`);
+  lines.push(`Dosis kopi: ${r.dose} g`);
+  if(r.isIced){ lines.push(`Air panas: ${r.hotWater} g`); lines.push(`Es: ${r.iceGrams} g`); lines.push(`Total minuman: ${r.totalWater} g`); }
+  else { lines.push(`Total air: ${r.totalWater} g`); }
+  lines.push(`Rasio: 1:${r.ratio}  ·  Grind: ${r.grind}  ·  Suhu: ${r.temp}°C  ·  Waktu: ${r.brewTime}`);
+  lines.push('');
+  lines.push('Step | Time | Add | Total');
+  r.table.forEach(row=> lines.push(`${row.step} | ${row.time} | ${row.add} | ${row.total}`));
+  lines.push('');
+  lines.push(`Tips: ${r.tips}`);
+  return lines.join('\n');
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function shareRecipe(){
+  const text = recipeAsText();
+  if(navigator.share){ navigator.share({title:'Resep Dripnesia', text}).catch(()=>{}); }
+  else { navigator.clipboard.writeText(text).then(()=>showToast('Disalin ke clipboard untuk dibagikan')).catch(()=>showToast('Gagal membagikan, coba screenshot resepnya')); }
+}
+const SAVE_KEY = 'dripnesia_brew_saved';
+function getSaved(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY))||[]; }catch(e){ return []; } }
+function setSaved(list){ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); }
+function saveRecipe(){
+  const r = lastRecipe;
+  const list = getSaved();
+  list.unshift({
+    id: Date.now(),
+    label: `${r.brewer.name} · ${r.isCustom?'Racikan Sendiri':r.name} (${r.isIced?'Iced':'Hot'})`,
+    ts: new Date().toLocaleString('id-ID'),
+    state: { brewer: state.brewer, drink: state.drink, style: state.style, dose: r.dose, manualRatio: r.isCustom ? r.ratio : undefined, pourCount: state.pourCount, icePlacement: state.icePlacement }
+  });
+  setSaved(list.slice(0,30));
+  showToast('Resep disimpan');
+}
+function openSaved(){
+  const overlay = document.getElementById('savedOverlay');
+  const list = getSaved();
+  const el = document.getElementById('savedList');
+  if(!list.length){ el.innerHTML = '<div class="empty-saved">Belum ada resep tersimpan.</div>'; }
+  else{
+    el.innerHTML = list.map(item=>`
+      <div class="saved-item">
+        <div class="saved-main" onclick="loadSaved(${item.id})">
+          <div class="saved-name">${item.label}</div>
+          <div class="saved-sub">${item.ts}</div>
+        </div>
+        <button class="saved-del" onclick="deleteSaved(${item.id})">×</button>
+      </div>`).join('');
+  }
+  overlay.classList.add('show');
+}
+function closeSaved(){ document.getElementById('savedOverlay').classList.remove('show'); }
+function loadSaved(id){
+  const item = getSaved().find(x=>x.id===id);
+  if(!item) return;
+  state = { brewer:item.state.brewer, drink:item.state.drink, style:item.state.style, manualRatio:{}, dose:item.state.dose, pourCount:item.state.pourCount||null, icePlacement:item.state.icePlacement||'start', advOpen:false };
+  if(item.state.manualRatio!==undefined) state.manualRatio[item.state.brewer] = item.state.manualRatio;
+  closeSaved();
+  renderAll();
+  showToast('Resep dimuat');
+}
+function deleteSaved(id){
+  setSaved(getSaved().filter(x=>x.id!==id));
+  openSaved();
+}
+
+/* ============ INIT ============ */
+renderAll();
+</script>
+</body>
+</html>
