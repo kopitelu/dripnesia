@@ -192,7 +192,21 @@
   .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(24,21,29,0.4); z-index:70; align-items:flex-start; justify-content:center; padding:60px 20px; }
   .modal-overlay.show{ display:flex; }
   .modal{ background:#fff; border-radius:var(--radius); max-width:440px; width:100%; padding:20px 20px 8px; max-height:70vh; overflow-y:auto; }
-  .modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .mode-toggle{ position:absolute; top:0; right:0; display:flex; border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+  .mode-toggle .mt-opt{ padding:7px 14px; font-size:12px; font-weight:700; color:var(--muted); cursor:pointer; background:var(--bg); transition:all .12s ease; }
+  .mode-toggle .mt-opt + .mt-opt{ border-left:1px solid var(--border); }
+  .mode-toggle .mt-opt.active{ background:var(--purple); color:#fff; }
+  @media (max-width:640px){ .mode-toggle{ position:static; margin-top:12px; width:max-content; } }
+
+  /* CLEAN MODE: hide explanatory copy, keep controls & data */
+  body.clean-mode .clean-hide,
+  body.clean-mode .section-sub,
+  body.clean-mode .hint-box,
+  body.clean-mode .tips-box,
+  body.clean-mode .flavor-block,
+  body.clean-mode .h-link,
+  body.clean-mode #styleBlock{ display:none !important; }
+
   .modal-head h3{ font-size:16px; margin:0; }
   .modal-close{ background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer; }
   .saved-item{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border); gap:10px; }
@@ -210,11 +224,15 @@
 
   <div class="header">
     <svg class="header-rings" viewBox="0 0 220 220"><circle cx="180" cy="40" r="30" fill="none" stroke="#6F4AA8" stroke-width="1.2"/><circle cx="180" cy="40" r="55" fill="none" stroke="#6F4AA8" stroke-width="1"/><circle cx="180" cy="40" r="80" fill="none" stroke="#6F4AA8" stroke-width="0.8"/></svg>
+    <div class="mode-toggle" id="modeToggle">
+      <div class="mt-opt" data-mode="detail">Detail</div>
+      <div class="mt-opt" data-mode="clean">Simple</div>
+    </div>
     <h1 class="h-title">Dripnesia Brew Guide</h1>
     <span class="tagline-badge">Brew Your Way. It's All Good.</span>
-    <div class="h-sub">Atur resep dan langkah seduh sesuai alat, dosis kopi, dan gaya seduhmu.<br>Nggak ada seduhan yang gagal — semua eksperimen itu langkah buat nemuin rasa favoritmu.</div>
+    <div class="h-sub">Atur resep dan langkah seduh sesuai alat, dosis kopi, dan gaya seduhmu.<br><span class="clean-hide">Nggak ada seduhan yang gagal — semua eksperimen itu langkah buat nemuin rasa favoritmu.</span></div>
     <button class="h-link" onclick="toggleHowto()">Cara menggunakan Brew Guide →</button>
-    <div class="h-howto" id="howtoBox">Pilih alat seduh, mode minuman, dosis, dan rasio di kolom kiri. Kalau bingung mau pakai rasio berapa, tinggal pilih salah satu gaya resep — semuanya diatur otomatis. Kartu resep di kanan selalu mengikuti perubahan yang kamu buat.</div>
+    <div class="h-howto clean-hide" id="howtoBox">Pilih alat seduh, mode minuman, dosis, dan rasio di kolom kiri. Kalau bingung mau pakai rasio berapa, tinggal pilih salah satu gaya resep — semuanya diatur otomatis. Kartu resep di kanan selalu mengikuti perubahan yang kamu buat.</div>
   </div>
 
   <div class="planner">
@@ -252,22 +270,24 @@
         <div class="hint-box" id="ratioHint">Masih bingung mau pilih rasio berapa? Coba salah satu <b>gaya resep</b> di bawah — rasio di atas otomatis menyesuaikan.</div>
       </div>
 
-      <div class="panel-block">
+      <div class="panel-block" id="bloomBlock">
+        <div class="section-heading">Air bloom</div>
+        <div class="big-display"><span class="big-num" id="bloomNum">33</span><span class="big-unit">gram</span></div>
+        <input type="range" id="bloomSlider" min="0" max="60" step="1" value="33">
+        <div class="hint-box">Air pertama yang dituang buat "membangunkan" bubuk kopi sebelum tuangan utama.</div>
+      </div>
+
+      <div class="panel-block" id="pourPlanBlock">
+        <div class="section-heading">Brew Your Way</div>
+        <div class="section-sub">Tentuin sendiri mau berapa tuangan, dan berapa gram tiap tuangan — sisanya otomatis dihitungin.</div>
+        <div class="chip-row" id="pourCountChips"></div>
+        <div id="pourManualWrap"></div>
+      </div>
+
+      <div class="panel-block" id="styleBlock">
         <div class="section-heading">Gaya resep</div>
         <div class="section-sub">Opsional — pilih satu untuk mengatur rasio, grind, suhu, dan jumlah tuangan sekaligus. Rasio manual di atas jadi tidak berlaku selama gaya resep aktif.</div>
         <div class="tabs" id="styleTabs"></div>
-
-        <div class="adv-toggle" id="advToggle" onclick="toggleAdv()"><span class="car">▶</span> Pengaturan lanjutan</div>
-        <div class="adv-body" id="advBody">
-          <div class="adv-row">
-            <div class="adv-label">Air bloom (dihitung otomatis)</div>
-            <div class="adv-readonly" id="bloomReadout">— g</div>
-          </div>
-          <div class="adv-row" id="pourCountRow">
-            <div class="adv-label">Jumlah tuangan</div>
-            <div class="pourcount-row" id="pourCountChips"></div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -341,11 +361,31 @@ let state = {
   drink: 'hot',
   style: null,        // null = manual/custom ratio mode; otherwise a style key
   manualRatio: {},    // per-brewer manual ratio memory, e.g { cone: 15.5 }
+  bloomManual: {},    // per-brewer manual bloom grams, e.g { cone: 40 }
   dose: 15,
   pourCount: null,
+  pourManual: {},     // manual grams for pour index 0..N-2, e.g { 0: 80 }
   icePlacement: 'start', // 'start' = ice in server first (recommended), 'end' = pour over ice after brewing
-  advOpen: false
 };
+
+/* ============ VIEW MODE (Clean / Detail) ============ */
+let viewMode = 'detail';
+function setViewMode(mode){
+  viewMode = mode;
+  document.body.classList.toggle('clean-mode', mode==='clean');
+  document.querySelectorAll('#modeToggle .mt-opt').forEach(el=>{
+    el.classList.toggle('active', el.dataset.mode===mode);
+  });
+  if(mode==='clean' && state.style){
+    state.style = null;
+    state.pourCount = null;
+    state.pourManual = {};
+  }
+  renderAll();
+}
+document.querySelectorAll('#modeToggle .mt-opt').forEach(el=>{
+  el.addEventListener('click', ()=> setViewMode(el.dataset.mode));
+});
 
 /* ============ HELPERS ============ */
 function currentStyles(){ return STYLES[state.brewer]; }
@@ -396,6 +436,7 @@ function renderBrewerTabs(){
       state.brewer = b.key;
       state.style = null;
       state.pourCount = null;
+      state.pourManual = {};
       renderAll();
     };
     el.appendChild(d);
@@ -415,6 +456,7 @@ function renderDrinkSeg(){
       const styles = visibleStyles();
       if(state.style && !styles.find(s=>s.key===state.style)) state.style = null;
       state.pourCount = null;
+      state.pourManual = {};
       renderAll();
     };
     el.appendChild(d);
@@ -431,6 +473,7 @@ function renderStyleTabs(){
     d.onclick = ()=>{
       state.style = (state.style===s.key) ? null : s.key; // click again to deselect back to manual
       state.pourCount = null;
+      state.pourManual = {};
       renderAll();
     };
     el.appendChild(d);
@@ -514,13 +557,29 @@ document.getElementById('ratioSlider').addEventListener('input', e=>{
   renderAll();
 });
 
-function toggleAdv(){
-  state.advOpen = !state.advOpen;
-  document.getElementById('advToggle').classList.toggle('open', state.advOpen);
-  document.getElementById('advBody').classList.toggle('show', state.advOpen);
-}
 function toggleHowto(){
   document.getElementById('howtoBox').classList.toggle('show');
+}
+function getBloomManual(brewerKey, autoBloom){
+  return state.bloomManual[brewerKey]!==undefined ? state.bloomManual[brewerKey] : autoBloom;
+}
+/* Sequentially allocates pour amounts: pours 0..N-2 are user-adjustable (clamped to what's
+   left at that point), the final pour always absorbs whatever water remains. */
+function computePourPlan(pourCount, remaining){
+  const plan = [], leftBefore = [];
+  let left = remaining;
+  for(let i=0;i<pourCount-1;i++){
+    leftBefore.push(left);
+    const stepsLeft = pourCount - i;
+    const def = Math.floor(left/stepsLeft);
+    let v = state.pourManual[i]!==undefined ? state.pourManual[i] : def;
+    v = Math.max(0, Math.min(v, left));
+    state.pourManual[i] = v;
+    plan.push(v);
+    left -= v;
+  }
+  plan.push(left);
+  return { plan, leftBefore };
 }
 
 /* ============ RECIPE COMPUTE ============ */
@@ -566,34 +625,42 @@ function buildRecipe(){
     hotWater = totalWater - iceGrams;
   }
 
-  const bloomWater = brewer.bloomMult ? Math.round(dose*brewer.bloomMult) : 0;
+  const autoBloom = brewer.bloomMult ? Math.round(dose*brewer.bloomMult) : 0;
+  const bloomWater = brewer.bloomMult
+    ? Math.max(0, Math.min(getBloomManual(state.brewer, autoBloom), hotWater-1))
+    : 0;
   const pourCount = pourAdj ? (state.pourCount || pourDefault) : pourDefault;
 
-  const table = buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourCount, isIced, brewTime, state.icePlacement);
+  let pourPlan = null, pourLeftBefore = null;
+  if(brewer.family==='pourover'){
+    const remaining = hotWater - bloomWater;
+    const planResult = computePourPlan(pourCount, remaining);
+    pourPlan = planResult.plan;
+    pourLeftBefore = planResult.leftBefore;
+  }
 
-  return { brewer, name, dose, ratio, totalWater, hotWater, iceGrams, temp, grind, bloomWater, table, isIced, pourAdj, pourCount, brewTime, tips, isCustom: !styleObj };
+  const table = buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, state.icePlacement);
+
+  return { brewer, name, dose, ratio, totalWater, hotWater, iceGrams, temp, grind, bloomWater, autoBloom, table, isIced, pourAdj, pourCount, pourPlan, pourLeftBefore, brewTime, tips, isCustom: !styleObj };
 }
 
-function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourCount, isIced, brewTime, icePlacement){
+function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, icePlacement){
   const rows = [];
   if(brewer.family==='pourover'){
     if(isIced && icePlacement==='start'){
       rows.push({step:'Taruh Es & Tare Timbangan', time:'00:00', add:iceGrams+' g', total:'0 g (tare)'});
     }
     let cum = bloomWater;
-    rows.push({step:'Bloom', time:'00:00–00:40', add:bloomWater+' g', total:cum+' g'});
-    const remaining = hotWater - bloomWater;
-    const per = Math.floor(remaining/pourCount);
+    if(bloomWater>0) rows.push({step:'Bloom', time:'00:00–00:40', add:bloomWater+' g', total:cum+' g'});
     let t = 40;
-    for(let i=0;i<pourCount;i++){
-      const isLast = i===pourCount-1;
-      const amt = isLast ? (hotWater-cum) : per;
+    pourPlan.forEach((amt,i)=>{
+      const isLast = i===pourPlan.length-1;
       cum += amt;
       const t2 = t + 35;
-      const label = pourCount===1 ? 'Tuangan Utama' : (isLast ? 'Tuangan Akhir' : 'Tuangan '+(i+1));
+      const label = pourPlan.length===1 ? 'Tuangan Utama' : (isLast ? 'Tuangan Akhir' : 'Tuangan '+(i+1));
       rows.push({step:label, time:fmtTime(t)+'–'+fmtTime(t2), add:amt+' g', total:cum+' g'});
       t = t2;
-    }
+    });
     if(isIced && icePlacement==='end') rows.push({step:'Tuang ke Es', time:'—', add:iceGrams+' g', total:(cum+iceGrams)+' g'});
   }
   else if(brewer.family==='immersion'){
@@ -603,8 +670,8 @@ function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourCount, isI
     if(isIced) rows.push({step:'Tuang ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
   }
   else if(brewer.family==='aeropress'){
-    rows.push({step:'Bloom', time:'00:00–00:30', add:bloomWater+' g', total:bloomWater+' g'});
-    rows.push({step:'Tuang Utama', time:'00:30–00:40', add:(hotWater-bloomWater)+' g', total:hotWater+' g'});
+    if(bloomWater>0) rows.push({step:'Bloom', time:'00:00–00:30', add:bloomWater+' g', total:bloomWater+' g'});
+    rows.push({step: bloomWater>0 ? 'Tuang Utama' : 'Tuang Air', time:'00:30–00:40', add:(hotWater-bloomWater)+' g', total:hotWater+' g'});
     rows.push({step:'Steep', time:brewTime, add:'—', total:hotWater+' g'});
     rows.push({step:'Tekan', time:'—', add:'—', total:hotWater+' g'});
     if(isIced) rows.push({step:'Tekan ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
@@ -617,22 +684,74 @@ function fmtTime(sec){
 }
 
 /* ============ RENDER: ADVANCED (bloom + pour count) ============ */
-function renderAdvanced(r){
-  document.getElementById('bloomReadout').textContent = r.bloomWater ? r.bloomWater+' g' : '— (tidak ada tahap bloom)';
-  const pcRow = document.getElementById('pourCountRow');
+function renderBloomSlider(r){
+  const block = document.getElementById('bloomBlock');
+  if(!r.brewer.bloomMult){
+    block.style.display = 'none';
+    return;
+  }
+  block.style.display = '';
+  const slider = document.getElementById('bloomSlider');
+  slider.max = r.hotWater - 1;
+  slider.value = r.bloomWater;
+  document.getElementById('bloomNum').textContent = r.bloomWater;
+}
+document.getElementById('bloomSlider').addEventListener('input', e=>{
+  state.bloomManual[state.brewer] = parseFloat(e.target.value);
+  renderAll();
+});
+
+function renderPourPlan(r){
+  const block = document.getElementById('pourPlanBlock');
+  const applies = r.brewer.family==='pourover' && r.pourAdj;
+  block.style.display = applies ? '' : 'none';
+  if(!applies) return;
+
   const pcChips = document.getElementById('pourCountChips');
-  if(r.brewer.family==='pourover' && r.pourAdj){
-    pcRow.style.display='';
-    pcChips.innerHTML='';
-    [2,3,4].forEach(n=>{
-      const c = document.createElement('div');
-      c.className='chip' + (r.pourCount===n?' active':'');
-      c.textContent = n+' Tuangan';
-      c.onclick = ()=>{ state.pourCount=n; renderAll(); };
-      pcChips.appendChild(c);
+  pcChips.innerHTML='';
+  [2,3,4].forEach(n=>{
+    const c = document.createElement('div');
+    c.className='chip' + (r.pourCount===n?' active':'');
+    c.textContent = n+' Tuangan';
+    c.onclick = ()=>{ state.pourCount=n; state.pourManual={}; renderAll(); };
+    pcChips.appendChild(c);
+  });
+
+  const wrap = document.getElementById('pourManualWrap');
+  const needsRebuild = wrap.dataset.count !== String(r.pourPlan.length);
+
+  if(needsRebuild){
+    wrap.innerHTML='';
+    wrap.dataset.count = String(r.pourPlan.length);
+    r.pourPlan.forEach((amt,i)=>{
+      const isLast = i===r.pourPlan.length-1;
+      const row = document.createElement('div');
+      row.style.marginTop = '14px';
+      if(isLast){
+        row.innerHTML = `<div class="adv-label">Tuangan ${i+1} <span class="val">otomatis</span></div><div class="adv-readonly" id="pour-readout-${i}">${amt} g</div>`;
+      } else {
+        row.innerHTML = `<div class="adv-label">Tuangan ${i+1} <span class="val" id="pour-val-${i}">${amt} g</span></div><input type="range" id="pour-slider-${i}" min="0" max="${r.pourLeftBefore[i]}" step="1" value="${amt}" data-pour-idx="${i}">`;
+      }
+      wrap.appendChild(row);
+    });
+    wrap.querySelectorAll('input[type=range]').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        state.pourManual[parseInt(e.target.dataset.pourIdx)] = parseFloat(e.target.value);
+        renderAll();
+      });
     });
   } else {
-    pcRow.style.display='none';
+    r.pourPlan.forEach((amt,i)=>{
+      const isLast = i===r.pourPlan.length-1;
+      if(isLast){
+        document.getElementById('pour-readout-'+i).textContent = amt+' g';
+      } else {
+        const slider = document.getElementById('pour-slider-'+i);
+        slider.max = r.pourLeftBefore[i];
+        if(document.activeElement !== slider) slider.value = amt; // don't fight the slider the user is actively dragging
+        document.getElementById('pour-val-'+i).textContent = amt+' g';
+      }
+    });
   }
 }
 
@@ -718,13 +837,12 @@ function renderAll(){
   renderStyleTabs();
   const r = buildRecipe();
   lastRecipe = r;
-  renderAdvanced(r);
+  renderBloomSlider(r);
+  renderPourPlan(r);
   renderSheet(r);
 }
 function resetAll(){
-  state = { brewer:'cone', drink:'hot', style:null, manualRatio:{}, dose:15, pourCount:null, icePlacement:'start', advOpen:false };
-  document.getElementById('advBody').classList.remove('show');
-  document.getElementById('advToggle').classList.remove('open');
+  state = { brewer:'cone', drink:'hot', style:null, manualRatio:{}, bloomManual:{}, dose:15, pourCount:null, pourManual:{}, icePlacement:'start' };
   renderAll();
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -792,7 +910,7 @@ function closeSaved(){ document.getElementById('savedOverlay').classList.remove(
 function loadSaved(id){
   const item = getSaved().find(x=>x.id===id);
   if(!item) return;
-  state = { brewer:item.state.brewer, drink:item.state.drink, style:item.state.style, manualRatio:{}, dose:item.state.dose, pourCount:item.state.pourCount||null, icePlacement:item.state.icePlacement||'start', advOpen:false };
+  state = { brewer:item.state.brewer, drink:item.state.drink, style:item.state.style, manualRatio:{}, bloomManual:{}, dose:item.state.dose, pourCount:item.state.pourCount||null, pourManual:{}, icePlacement:item.state.icePlacement||'start' };
   if(item.state.manualRatio!==undefined) state.manualRatio[item.state.brewer] = item.state.manualRatio;
   closeSaved();
   renderAll();
@@ -804,7 +922,7 @@ function deleteSaved(id){
 }
 
 /* ============ INIT ============ */
-renderAll();
+setViewMode('detail');
 </script>
 </body>
 </html>
