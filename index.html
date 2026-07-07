@@ -233,6 +233,14 @@
   body.clean-mode .h-link,
   body.clean-mode #styleBlock{ display:none !important; }
 
+  /* SIMPLE MODE: Troubleshooting collapses to just the heading until tapped */
+  .ts-chevron{ display:none; font-size:11px; transition:transform .15s ease; }
+  body.clean-mode .ts-toggle-heading{ cursor:pointer; }
+  body.clean-mode .ts-chevron{ display:inline-block; }
+  body.clean-mode #tsListWrap{ display:none; }
+  body.clean-mode #tsListWrap.ts-open{ display:block; }
+  body.clean-mode .ts-toggle-heading.ts-open .ts-chevron{ transform:rotate(180deg); }
+
   .modal-head h3{ font-size:16px; margin:0; }
   .modal-close{ background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer; }
   .saved-item{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border); gap:10px; }
@@ -993,9 +1001,9 @@ function renderSheet(r){
     </div>`}
 
     <div class="ts-block">
-      <div class="section-heading">Troubleshooting</div>
+      <div class="section-heading ts-toggle-heading" onclick="toggleTsSection()">Troubleshooting <span class="ts-chevron" id="tsChevron">▾</span></div>
       <div class="section-sub">Belum pas rasanya? It's all good — itu bukan berarti gagal, cuma tanda buat disesuaikan sedikit.</div>
-      <div id="tsList"></div>
+      <div id="tsListWrap"><div id="tsList"></div></div>
     </div>
 
     <div class="action-row">
@@ -1015,6 +1023,10 @@ function renderSheet(r){
   });
 }
 function toggleTs(i){ document.querySelectorAll('#tsList .ts-item')[i].classList.toggle('open'); }
+function toggleTsSection(){
+  document.getElementById('tsListWrap').classList.toggle('ts-open');
+  document.querySelector('.ts-toggle-heading').classList.toggle('ts-open');
+}
 function toggleEdu(){ document.getElementById('eduItem').classList.toggle('open'); }
 
 /* ============ MASTER RENDER ============ */
