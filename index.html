@@ -375,18 +375,18 @@ const BREWERS = {
    These scale proportionally with dose (see buildRecipe). Not used in custom/manual mode. */
 const STYLES = {
   cone: [
-    { key:'recommended', name:'Dripnesia Recommended', ratio:12,   iced:false, pourTargets:[45,95,140,180], grind:1,  temp:'high',  brewTime:'2:15–2:45', tips:'Rasio lebih rapat bikin rasanya lebih mantap dan pekat — inilah signature rekomendasi Dripnesia.', recipeReason:'Rasio 1:12 dipilih supaya rasanya lebih mantap dan pekat, jadi ciri khas rekomendasi Dripnesia. Tuangan tetap dibagi tiga tahap supaya ekstraksi tetap terkontrol walau air yang dipakai lebih sedikit dari biasanya.' },
-    { key:'easy',        name:'Easy Single Pour',      ratio:16,   iced:false, pourTargets:[45,240], grind:-1, temp:'low',  brewTime:'2:00–2:30', tips:'Satu tuangan lambat lebih mudah dikontrol untuk pemula.', recipeReason:'Cuma satu tuangan biar nggak perlu mikirin timing atau jumlah air tiap tahap. Cocok banget kalau ini pertama kalinya kamu pakai V60.' },
-    { key:'classic',     name:'Classic 3-Pour',        ratio:15,   iced:false, pourTargets:[45,120,175,225], grind:0,  temp:'mid',  brewTime:'2:30–3:00', tips:'Proporsi klasik yang umum dipakai banyak brewer V60.', recipeReason:'Tuangan pertama dibuat lebih besar untuk membangun slurry dan membasahi kopi secara merata. Tuangan berikutnya lebih kecil agar aliran lebih stabil dan hasil akhir tetap clean.' },
-    { key:'bold',        name:'Bold & Comfort',        ratio:14,   iced:false, pourTargets:[45,115,165,210], grind:1,  temp:'high', brewTime:'3:00–3:30', tips:'Tuangan bertahap dengan agitasi ringan menghasilkan body lebih tebal.', recipeReason:'Tuangan dijaga lebih rapat dan disertai agitasi ringan supaya ekstraksi lebih dalam. Hasilnya body lebih tebal dan rasa lebih intens dari resep standar.' },
-    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, grind:0,  temp:'high', brewTime:'1:30–2:00', tips:'Diseduh langsung di atas es supaya rasa tetap segar dan tidak encer.', recipeReason:'Kopi diseduh lebih pekat lalu langsung menetes ke atas es supaya suhu cepat turun tanpa over-extract. Teknik ini menjaga rasa tetap segar walau sudah tercampur es.' }
+    { key:'recommended', name:'Dripnesia Recommended', ratio:12,   iced:false, pourTargets:[45,95,140,180], timing:{bloomSec:45, pourSec:[35,30,30]}, grind:1,  temp:'high',  brewTime:'2:15–2:45', tips:'Rasio lebih rapat bikin rasanya lebih mantap dan pekat — inilah signature rekomendasi Dripnesia.', recipeReason:'Rasio 1:12 dipilih supaya rasanya lebih mantap dan pekat, jadi ciri khas rekomendasi Dripnesia. Tuangan tetap dibagi tiga tahap supaya ekstraksi tetap terkontrol walau air yang dipakai lebih sedikit dari biasanya.' },
+    { key:'easy',        name:'Easy Single Pour',      ratio:16,   iced:false, pourTargets:[45,240], timing:{bloomSec:40, pourSec:[85]}, grind:-1, temp:'low',  brewTime:'2:00–2:30', tips:'Satu tuangan lambat lebih mudah dikontrol untuk pemula.', recipeReason:'Cuma satu tuangan biar nggak perlu mikirin timing atau jumlah air tiap tahap. Cocok banget kalau ini pertama kalinya kamu pakai V60.' },
+    { key:'classic',     name:'Classic 3-Pour',        ratio:15,   iced:false, pourTargets:[45,120,175,225], timing:{bloomSec:45, pourSec:[40,35,35]}, grind:0,  temp:'mid',  brewTime:'2:30–3:00', tips:'Proporsi klasik yang umum dipakai banyak brewer V60.', recipeReason:'Tuangan pertama dibuat lebih besar untuk membangun slurry dan membasahi kopi secara merata. Tuangan berikutnya lebih kecil agar aliran lebih stabil dan hasil akhir tetap clean.' },
+    { key:'bold',        name:'Bold & Comfort',        ratio:14,   iced:false, pourTargets:[45,115,165,210], timing:{bloomSec:50, pourSec:[35,35,40]}, grind:1,  temp:'high', brewTime:'3:00–3:30', tips:'Tuangan bertahap dengan agitasi ringan menghasilkan body lebih tebal.', recipeReason:'Tuangan dijaga lebih rapat dan disertai agitasi ringan supaya ekstraksi lebih dalam. Hasilnya body lebih tebal dan rasa lebih intens dari resep standar.' },
+    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, timing:{bloomSec:30, pourSec:[25,25]}, grind:0,  temp:'high', brewTime:'1:30–2:00', tips:'Diseduh langsung di atas es supaya rasa tetap segar dan tidak encer.', recipeReason:'Kopi diseduh lebih pekat lalu langsung menetes ke atas es supaya suhu cepat turun tanpa over-extract. Teknik ini menjaga rasa tetap segar walau sudah tercampur es.' }
   ],
   flat: [
-    { key:'recommended', name:'Dripnesia Recommended', ratio:12,   iced:false, pourTargets:[45,115,180], grind:1,  temp:'high',  brewTime:'2:45–3:15', tips:'Rasio lebih rapat bikin body lebih bulat dan pekat — signature rekomendasi Dripnesia untuk Flat-Bottom.', recipeReason:'Rasio 1:12 dipilih supaya rasanya lebih mantap dan pekat, sambil tetap memanfaatkan dasar rata dripper untuk body yang bulat. Dua tuangan besar tetap cukup menjaga ekstraksi stabil walau air yang dipakai lebih sedikit dari biasanya.' },
-    { key:'easy',        name:'Easy Two Pour',         ratio:15.5, iced:false, pourTargets:[45,140,233], grind:-1, temp:'low',  brewTime:'2:30–3:00', tips:'Dua tuangan sederhana, cocok untuk seduhan harian.', recipeReason:'Dua tuangan simpel tanpa perlu itung-itungan rumit. Pas buat seduhan harian yang cepat dan konsisten.' },
-    { key:'classic',     name:'Classic Pulse Pour',    ratio:15,   iced:false, pourTargets:[45,100,150,190,225], grind:0,  temp:'mid',  brewTime:'3:00–3:40', tips:'Tuangan kecil berulang (pulse) menjaga level air tetap stabil.', recipeReason:'Tuangan kecil berulang (pulse pour) menjaga level air di atas kopi tetap stabil sepanjang proses. Ini bikin ekstraksi lebih merata dan mengurangi risiko channeling.' },
-    { key:'bold',        name:'Bold & Rounded',        ratio:14.5, iced:false, pourTargets:[45,110,165,218], grind:1,  temp:'high', brewTime:'3:30–4:00', tips:'Body lebih bulat dan pekat dengan tuangan lebih rapat.', recipeReason:'Tuangan dibuat lebih rapat supaya kontak air dan kopi lebih lama. Hasilnya body lebih bulat dan rasa lebih pekat.' },
-    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, grind:0,  temp:'high', brewTime:'2:00–2:30', tips:'Sama seperti versi cone, diseduh langsung di atas es.', recipeReason:'Sama seperti versi cone, kopi diseduh pekat lalu langsung kena es supaya cepat dingin. Cocok kalau kamu suka Flat-Bottom tapi pengen versi dingin yang tetap clean.' }
+    { key:'recommended', name:'Dripnesia Recommended', ratio:12,   iced:false, pourTargets:[45,115,180], timing:{bloomSec:45, pourSec:[50,45]}, grind:1,  temp:'high',  brewTime:'2:45–3:15', tips:'Rasio lebih rapat bikin body lebih bulat dan pekat — signature rekomendasi Dripnesia untuk Flat-Bottom.', recipeReason:'Rasio 1:12 dipilih supaya rasanya lebih mantap dan pekat, sambil tetap memanfaatkan dasar rata dripper untuk body yang bulat. Dua tuangan besar tetap cukup menjaga ekstraksi stabil walau air yang dipakai lebih sedikit dari biasanya.' },
+    { key:'easy',        name:'Easy Two Pour',         ratio:15.5, iced:false, pourTargets:[45,140,233], timing:{bloomSec:40, pourSec:[60,55]}, grind:-1, temp:'low',  brewTime:'2:30–3:00', tips:'Dua tuangan sederhana, cocok untuk seduhan harian.', recipeReason:'Dua tuangan simpel tanpa perlu itung-itungan rumit. Pas buat seduhan harian yang cepat dan konsisten.' },
+    { key:'classic',     name:'Classic Pulse Pour',    ratio:15,   iced:false, pourTargets:[45,100,150,190,225], timing:{bloomSec:45, pourSec:[25,25,25,25]}, grind:0,  temp:'mid',  brewTime:'3:00–3:40', tips:'Tuangan kecil berulang (pulse) menjaga level air tetap stabil.', recipeReason:'Tuangan kecil berulang (pulse pour) menjaga level air di atas kopi tetap stabil sepanjang proses. Ini bikin ekstraksi lebih merata dan mengurangi risiko channeling.' },
+    { key:'bold',        name:'Bold & Rounded',        ratio:14.5, iced:false, pourTargets:[45,110,165,218], timing:{bloomSec:50, pourSec:[35,35,35]}, grind:1,  temp:'high', brewTime:'3:30–4:00', tips:'Body lebih bulat dan pekat dengan tuangan lebih rapat.', recipeReason:'Tuangan dibuat lebih rapat supaya kontak air dan kopi lebih lama. Hasilnya body lebih bulat dan rasa lebih pekat.' },
+    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, timing:{bloomSec:30, pourSec:[25,25]}, grind:0,  temp:'high', brewTime:'2:00–2:30', tips:'Sama seperti versi cone, diseduh langsung di atas es.', recipeReason:'Sama seperti versi cone, kopi diseduh pekat lalu langsung kena es supaya cepat dingin. Cocok kalau kamu suka Flat-Bottom tapi pengen versi dingin yang tetap clean.' }
   ],
   frenchpress: [
     { key:'recommended', name:'Dripnesia Recommended',   ratio:15, iced:false, grind:0,  temp:'mid',  brewTime:'4:00 + rehat 2 menit', tips:'Pecahkan crust dan buang ampas mengapung untuk cangkir lebih bersih.', recipeReason:'Steep 4 menit penuh memberi waktu ekstraksi yang cukup tanpa perlu tuangan bertahap. Memecah crust di akhir membantu buang rasa pahit dari ampas yang mengapung.' },
@@ -394,9 +394,9 @@ const STYLES = {
     { key:'iced',         name:'French Press Over Ice',   ratio:14, iced:true,  grind:0,  temp:'high', icePct:0.3, brewTime:'3:00', tips:'Diseduh lebih pekat, lalu dituang langsung di atas es.', recipeReason:'Diseduh lebih pekat dulu supaya rasanya tetap kuat setelah dituang ke atas es. French Press cocok buat iced karena bisa langsung dituang tanpa alat tambahan.' }
   ],
   aeropress: [
-    { key:'recommended', name:'Dripnesia Recommended', ratio:15, iced:false, grind:0,  temp:'mid',  brewTime:'1:30–2:00', tips:'Dua tahap tuang dengan tekan perlahan menjaga rasa tetap seimbang.', recipeReason:'Dua tahap tuang dengan tekan perlahan menjaga ekstraksi tetap seimbang antara clean dan full-bodied. Resep paling fleksibel buat mulai eksplorasi AeroPress.' },
-    { key:'bold',         name:'Bold Concentrate',       ratio:12, iced:false, grind:1,  temp:'high', brewTime:'2:30–3:00', tips:'Steep lebih lama menghasilkan konsentrat yang lebih pekat.', recipeReason:'Steep yang lebih lama menghasilkan konsentrat yang lebih pekat sebelum ditekan. Cocok kalau kamu suka kopi yang kuat atau mau bikin americano.' },
-    { key:'iced',         name:'Iced AeroPress',         ratio:14, iced:true,  grind:0,  temp:'high', icePct:0.35, brewTime:'1:00–1:30', tips:'Ditekan langsung ke atas es supaya suhu langsung turun.', recipeReason:'Ditekan langsung ke atas es supaya suhu langsung turun dan rasa tetap segar. Dosis dipekatkan sedikit biar nggak keburu encer pas kena es.' }
+    { key:'recommended', name:'Dripnesia Recommended', ratio:15, iced:false, timing:{bloomSec:30}, grind:0,  temp:'mid',  brewTime:'1:30–2:00', tips:'Dua tahap tuang dengan tekan perlahan menjaga rasa tetap seimbang.', recipeReason:'Dua tahap tuang dengan tekan perlahan menjaga ekstraksi tetap seimbang antara clean dan full-bodied. Resep paling fleksibel buat mulai eksplorasi AeroPress.' },
+    { key:'bold',         name:'Bold Concentrate',       ratio:12, iced:false, timing:{bloomSec:20}, grind:1,  temp:'high', brewTime:'2:30–3:00', tips:'Steep lebih lama menghasilkan konsentrat yang lebih pekat.', recipeReason:'Steep yang lebih lama menghasilkan konsentrat yang lebih pekat sebelum ditekan. Cocok kalau kamu suka kopi yang kuat atau mau bikin americano.' },
+    { key:'iced',         name:'Iced AeroPress',         ratio:14, iced:true,  timing:{bloomSec:20}, grind:0,  temp:'high', icePct:0.35, brewTime:'1:00–1:30', tips:'Ditekan langsung ke atas es supaya suhu langsung turun.', recipeReason:'Ditekan langsung ke atas es supaya suhu langsung turun dan rasa tetap segar. Dosis dipekatkan sedikit biar nggak keburu encer pas kena es.' }
   ]
 };
 
@@ -717,6 +717,37 @@ function getBloomManual(brewerKey, autoBloom){
 function getTempManual(brewerKey, autoTemp){
   return state.tempManual[brewerKey]!==undefined ? state.tempManual[brewerKey] : autoTemp;
 }
+/* SMART ROUNDING: scales a preset's fixed cumulative pour targets (defined at a 15g base
+   dose) to the user's actual dose, rounding intermediate cumulative targets to convenient
+   5g increments for easy scale-reading while preserving the EXACT final total water (never
+   rounded away from the true ratio-derived total). Guarantees strict monotonic increase and
+   no zero/negative individual pours. */
+function roundToStep(x, step){ return Math.round(x/step)*step; }
+function scalePourTargets(baseTargets, dose, baseDose){
+  const scale = dose / baseDose;
+  const raw = baseTargets.map(t => t * scale);
+  const n = raw.length;
+  const exactFinal = Math.round(raw[n-1]);
+  let out = raw.map((v,i) => i===n-1 ? exactFinal : roundToStep(v, 5));
+  // forward pass: fix any collisions/non-increases introduced by independent rounding
+  for(let i=1;i<n;i++){
+    if(out[i] <= out[i-1]) out[i] = (i===n-1) ? exactFinal : out[i-1] + 5;
+  }
+  // backward pass: make sure nothing crowds the fixed final total
+  for(let i=n-2;i>=0;i--){
+    if(out[i] >= out[n-1]) out[i] = Math.max(1, out[n-1] - 5*(n-1-i));
+  }
+  // final 1g-step cleanup in case 5g adjustments still collided (tiny doses)
+  for(let i=1;i<n;i++){
+    if(out[i] <= out[i-1]) out[i] = out[i-1] + 1;
+  }
+  out[n-1] = exactFinal;
+  for(let i=n-2;i>=0;i--){
+    if(out[i] >= out[i+1]) out[i] = out[i+1] - 1;
+  }
+  return out;
+}
+
 /* Sequentially allocates pour amounts: pours 0..N-2 are user-adjustable (clamped to what's
    left at that point), the final pour always absorbs whatever water remains. */
 function computePourPlan(pourCount, remaining){
@@ -775,8 +806,8 @@ function buildRecipe(){
 
   if(styleObj && brewer.family==='pourover' && styleObj.pourTargets){
     // PRESET: fixed cumulative targets from the recipe database, scaled proportionally by dose
-    const scale = dose / 15;
-    const scaledTargets = styleObj.pourTargets.map(t => Math.round(t * scale));
+    // and smart-rounded to convenient 5g scale increments (exact final total is never rounded away)
+    const scaledTargets = scalePourTargets(styleObj.pourTargets, dose, 15);
     bloomWater = scaledTargets[0];
     autoBloom = bloomWater;
     const lastTarget = scaledTargets[scaledTargets.length-1];
@@ -812,24 +843,34 @@ function buildRecipe(){
     }
   }
 
-  const table = buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, state.icePlacement);
+  // RECIPE-SPECIFIC TIMING: curated presets carry their own bloom/pour timing template;
+  // custom/manual recipes fall back to a sensible generic pacing (handled inside buildTable).
+  const timing = styleObj && styleObj.timing ? styleObj.timing : null;
+
+  const table = buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, state.icePlacement, timing);
 
   return { brewer, name, dose, ratio, totalWater, hotWater, iceGrams, temp, grind, bloomWater, autoBloom, table, isIced, pourCount: pourPlan?pourPlan.length:null, pourPlan, pourLeftBefore, brewTime, tips, recipeReason, isCustom: !styleObj };
 }
 
-function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, icePlacement){
+function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, icePlacement, timing){
   const rows = [];
   if(brewer.family==='pourover'){
     if(isIced && icePlacement==='start'){
       rows.push({step:'Taruh Es & Tare Timbangan', time:'00:00', add:iceGrams+' g', total:'0 g (tare)'});
     }
     let cum = bloomWater;
-    if(bloomWater>0) rows.push({step:'Bloom', time:'00:00–00:40', add:bloomWater+' g', total:cum+' g'});
-    let t = 40;
+    let t = 0;
+    const bloomSec = timing && timing.bloomSec!==undefined ? timing.bloomSec : 40;
+    if(bloomWater>0){
+      const t2 = t + bloomSec;
+      rows.push({step:'Bloom', time:fmtTime(t)+'–'+fmtTime(t2), add:bloomWater+' g', total:cum+' g'});
+      t = t2;
+    }
     pourPlan.forEach((amt,i)=>{
       const isLast = i===pourPlan.length-1;
       cum += amt;
-      const t2 = t + 35;
+      const dur = timing && timing.pourSec && timing.pourSec[i]!==undefined ? timing.pourSec[i] : 35;
+      const t2 = t + dur;
       const label = pourPlan.length===1 ? 'Tuangan Utama' : (isLast ? 'Tuangan Akhir' : 'Tuangan '+(i+1));
       rows.push({step:label, time:fmtTime(t)+'–'+fmtTime(t2), add:amt+' g', total:cum+' g'});
       t = t2;
@@ -837,14 +878,19 @@ function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIc
     if(isIced && icePlacement==='end') rows.push({step:'Tuang ke Es', time:'—', add:iceGrams+' g', total:(cum+iceGrams)+' g'});
   }
   else if(brewer.family==='immersion'){
+    // Immersion brewing: steep as a whole, not pour-over pulses. brewTime is this preset's
+    // own steep duration (it already differs per recipe: 4:00, 4:00, 3:00), so it is never a
+    // generic pour-count-derived figure, and it is never mislabeled as a "pour" completion time.
     rows.push({step:'Tuang Air', time:'00:00', add:hotWater+' g', total:hotWater+' g'});
     rows.push({step:'Steep', time:brewTime, add:'—', total:hotWater+' g'});
     rows.push({step:'Tekan Plunger', time:'—', add:'—', total:hotWater+' g'});
     if(isIced) rows.push({step:'Tuang ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
   }
   else if(brewer.family==='aeropress'){
-    if(bloomWater>0) rows.push({step:'Bloom', time:'00:00–00:30', add:bloomWater+' g', total:bloomWater+' g'});
-    rows.push({step: bloomWater>0 ? 'Tuang Utama' : 'Tuang Air', time:'00:30–00:40', add:(hotWater-bloomWater)+' g', total:hotWater+' g'});
+    const bloomSec = timing && timing.bloomSec!==undefined ? timing.bloomSec : 30;
+    const mainEnd = bloomSec + 10;
+    if(bloomWater>0) rows.push({step:'Bloom', time:'00:00–'+fmtTime(bloomSec), add:bloomWater+' g', total:bloomWater+' g'});
+    rows.push({step: bloomWater>0 ? 'Tuang Utama' : 'Tuang Air', time:(bloomWater>0?fmtTime(bloomSec):'00:00')+'–'+fmtTime(mainEnd), add:(hotWater-bloomWater)+' g', total:hotWater+' g'});
     rows.push({step:'Steep', time:brewTime, add:'—', total:hotWater+' g'});
     rows.push({step:'Tekan', time:'—', add:'—', total:hotWater+' g'});
     if(isIced) rows.push({step:'Tekan ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
