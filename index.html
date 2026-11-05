@@ -169,13 +169,10 @@
   table.brewtable th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted); font-weight:700; padding:0 8px 8px 0; border-bottom:1px solid var(--border); }
   table.brewtable td{ font-size:13px; padding:9px 8px 9px 0; border-bottom:1px dashed var(--border); }
   table.brewtable td.mono{ font-family:'JetBrains Mono', monospace; font-weight:700; }
+  table.brewtable td.total-cell{ color:var(--purple); font-size:14px; }
   table.brewtable tr:last-child td{ border-bottom:none; }
 
   .tips-box{ font-size:13px; line-height:1.6; color:var(--ink); background:var(--lav-bg); border:1px solid var(--soft-purple); border-radius:var(--radius); padding:12px 14px; margin-bottom:14px; }
-  .flavor-block{ margin-bottom:16px; }
-  .flavor-block .fb-label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink); margin-bottom:6px; }
-  .flavor-block p{ font-size:13px; line-height:1.6; color:var(--ink); margin:0 0 4px; }
-  .flavor-block .fb-note{ font-size:12.5px; color:var(--muted); font-style:normal; }
 
   /* TROUBLESHOOT */
   .ts-block{ margin-bottom:18px; }
@@ -218,19 +215,28 @@
   .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(24,21,29,0.4); z-index:70; align-items:flex-start; justify-content:center; padding:60px 20px; }
   .modal-overlay.show{ display:flex; }
   .modal{ background:#fff; border-radius:var(--radius); max-width:440px; width:100%; padding:20px 20px 8px; max-height:70vh; overflow-y:auto; }
-  .mode-toggle{ position:absolute; top:0; right:0; display:flex; border:1px solid var(--border); border-radius:20px; overflow:hidden; }
-  .mode-toggle .mt-opt{ padding:7px 14px; font-size:12px; font-weight:700; color:var(--muted); cursor:pointer; background:var(--bg); transition:all .12s ease; }
-  .mode-toggle .mt-opt + .mt-opt{ border-left:1px solid var(--border); }
+  /* VIEW MODE TOGGLE: a clearly visible, easy-to-tap Simple/Detail switch — sits below the
+     header intro and above brewer selection, not tucked away as a small corner control. */
+  .mode-toggle{ display:flex; border:1.5px solid var(--soft-purple); border-radius:14px; overflow:hidden; background:var(--lav-bg); max-width:340px; margin-top:18px; }
+  .mode-toggle .mt-opt{ flex:1; min-height:44px; display:flex; align-items:center; justify-content:center; padding:10px 16px; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; background:#fff; transition:all .12s ease; }
+  .mode-toggle .mt-opt + .mt-opt{ border-left:1.5px solid var(--soft-purple); }
   .mode-toggle .mt-opt.active{ background:var(--purple); color:#fff; }
-  @media (max-width:640px){ .mode-toggle{ position:static; margin-top:12px; width:max-content; } }
+  .view-toggle-hint{ display:none; font-size:12.5px; color:var(--muted); margin-top:8px; max-width:340px; line-height:1.5; }
+  body.clean-mode .view-toggle-hint{ display:block; }
+  @media (max-width:520px){ .mode-toggle, .view-toggle-hint{ max-width:100%; } }
 
-  /* CLEAN MODE: hide explanatory copy, keep controls & data */
+  /* SIMPLE MODE: show only the essential controls (brewer, hot/iced, dose, output).
+     Ratio/bloom/temp/pour-plan/style stay fully in the underlying state — only visibility
+     changes, so switching back to Detail reveals everything exactly as it was. */
   body.clean-mode .clean-hide,
   body.clean-mode .section-sub,
   body.clean-mode .hint-box,
   body.clean-mode .tips-box,
-  body.clean-mode .flavor-block,
   body.clean-mode .h-link,
+  body.clean-mode #ratioBlock,
+  body.clean-mode #bloomBlock,
+  body.clean-mode #tempBlock,
+  body.clean-mode #pourPlanBlock,
   body.clean-mode #styleBlock{ display:none !important; }
 
   /* SIMPLE MODE: Troubleshooting collapses to just the heading until tapped */
@@ -264,9 +270,10 @@
     <button class="h-link" onclick="toggleHowto()">Cara menggunakan Brew Guide →</button>
     <div class="h-howto clean-hide" id="howtoBox">Pilih alat seduh, mode minuman, dosis, dan rasio di kolom kiri. Kalau bingung mau pakai rasio berapa, tinggal pilih salah satu gaya resep — semuanya diatur otomatis. Kartu resep di kanan selalu mengikuti perubahan yang kamu buat.</div>
     <div class="mode-toggle" id="modeToggle">
-      <div class="mt-opt" data-mode="detail">Detail</div>
       <div class="mt-opt" data-mode="clean">Simple</div>
+      <div class="mt-opt" data-mode="detail">Detail</div>
     </div>
+    <div class="view-toggle-hint">Mau atur rasio, suhu, dan pouring sendiri? Coba Detail Mode.</div>
   </div>
 
   <div class="planner">
@@ -295,7 +302,7 @@
         <div class="chip-row" id="doseChips" style="margin-top:8px;"></div>
       </div>
 
-      <div class="panel-block">
+      <div class="panel-block" id="ratioBlock">
         <div class="section-heading">Rasio</div>
         <div class="big-display"><span class="big-unit">1 :</span><span class="big-num" id="ratioNum">15</span></div>
         <div id="ratioLockWrap">
@@ -321,8 +328,10 @@
         <div id="tempLockWrap">
           <input type="range" id="tempSlider" min="82" max="96" step="1" value="92">
           <div class="slider-endcaps"><span>Lebih dingin</span><span>Lebih panas</span></div>
+          <div class="chip-row" id="tempRefChips" style="margin-top:10px;"></div>
         </div>
         <div class="hint-box">Suhu lebih tinggi mendorong ekstraksi lebih dalam; lebih rendah menahannya lebih ringan.</div>
+        <div class="hint-box" id="tempRefSource"></div>
       </div>
 
       <div class="panel-block" id="pourPlanBlock">
@@ -365,28 +374,44 @@
 <script>
 /* ============ DATA MODEL ============ */
 const BREWERS = {
-  cone:        { key:'cone', name:'Cone Dripper', sub:'V60 · Kono · Origami Cone', family:'pourover', grindBase:'Medium-Fine', tempRange:[90,94], bloomMult:3, character:'clean dengan clarity tinggi, mudah menonjolkan acidity', ratioBounds:[10,20], customPourDefault:3 },
-  flat:        { key:'flat', name:'Flat-Bottom', sub:'Kalita Wave · Orea · April Brewer · Origami Flat', family:'pourover', grindBase:'Medium', tempRange:[88,93], bloomMult:3, character:'sweetness lebih bulat, body lebih terasa, hasil lebih stabil', ratioBounds:[10,20], customPourDefault:2 },
-  frenchpress: { key:'frenchpress', name:'French Press', sub:'Full immersion', family:'immersion', grindBase:'Coarse', tempRange:[93,96], bloomMult:null, character:'body tebal, simpel, paling forgiving untuk pemula', ratioBounds:[10,20] },
-  aeropress:   { key:'aeropress', name:'AeroPress', sub:'Immersion + tekanan', family:'aeropress', grindBase:'Medium-Fine', tempRange:[82,94], bloomMult:2.0, character:'fleksibel, bisa bold atau clean tergantung resep', ratioBounds:[10,20] }
+  cone:        { key:'cone', name:'Cone Dripper', sub:'V60 · Kono · Origami Cone', family:'pourover', grindBase:'Medium-Fine', tempRange:[90,94], bloomMult:3, ratioBounds:[10,20], customPourDefault:3, drawdownRangeSec:[20,45] },
+  flat:        { key:'flat', name:'Flat-Bottom', sub:'Kalita Wave · Orea · April Brewer · Origami Flat', family:'pourover', grindBase:'Medium', tempRange:[88,93], bloomMult:3, ratioBounds:[10,20], customPourDefault:2, drawdownRangeSec:[25,50] },
+  frenchpress: { key:'frenchpress', name:'French Press', sub:'Full immersion', family:'immersion', grindBase:'Coarse', tempRange:[93,96], bloomMult:null, ratioBounds:[10,20] },
+  aeropress:   { key:'aeropress', name:'AeroPress', sub:'Immersion + tekanan', family:'aeropress', grindBase:'Medium-Fine', tempRange:[82,94], bloomMult:2.0, ratioBounds:[10,20] }
+};
+/* Vietnam Drip (phin) was removed from the calculator — traditional phin brewing doesn't need
+   the same numeric precision as pour-over, and will instead get simple educational content in a
+   future update. Any OLD saved recipe referencing brewer:'vietnam' is handled gracefully by
+   loadSaved() (falls back to Cone) rather than crashing. */
+
+/* TEMPERATURE REFERENCE SYSTEM — just two transparent, separately-sourced ranges. A curated
+   preset always keeps its own exact configured temperature regardless of these ranges. */
+const TEMP_REFS = {
+  sca:    { label:'SCA Reference', range:[92,96], source:'Rentang referensi seduh umum berdasarkan panduan historis SCA — bukan klaim bahwa SCA merekomendasikan satu resep Dripnesia tertentu, dan bukan standar universal untuk semua alat seduh. Beberapa protokol brewing membedakan suhu di ketel vs suhu slurry di dalam dripper.' },
+  custom: { label:'Custom',        range:[75,100],source:'Rentang eksplorasi bebas 75–100°C sesuai roast dan metodemu — suhu di bawah 90°C tidak otomatis berarti salah.' }
 };
 
 /* pourTargets = fixed CUMULATIVE water targets at a 15g base dose (bloom is the first entry).
-   These scale proportionally with dose (see buildRecipe). Not used in custom/manual mode. */
+   These scale proportionally with dose (see buildRecipe). Not used in custom/manual mode.
+   timing = this preset's own timing template (RECIPE-SPECIFIC TIMING): bloomPourSec (time spent
+   pouring the bloom) + bloomRestSec (time spent waiting for it to bloom) + pourSec[] (duration of
+   each pour) + gapSec[] (rest between consecutive pours, length = pours-1). brewTime remains the
+   full expected-completion estimate (bloom + pours + drawdown) — it is never the same number as
+   the last pour's end time, and is always labeled as a starting estimate, not a guarantee. */
 const STYLES = {
   cone: [
-    { key:'recommended', name:'Dripnesia Recommended', ratio:12,   iced:false, pourTargets:[45,95,140,180], timing:{bloomSec:45, pourSec:[35,30,30]}, grind:1,  temp:'high',  brewTime:'2:15–2:45', tips:'Rasio lebih rapat bikin rasanya lebih mantap dan pekat — inilah signature rekomendasi Dripnesia.', recipeReason:'Rasio 1:12 dipilih supaya rasanya lebih mantap dan pekat, jadi ciri khas rekomendasi Dripnesia. Tuangan tetap dibagi tiga tahap supaya ekstraksi tetap terkontrol walau air yang dipakai lebih sedikit dari biasanya.' },
-    { key:'easy',        name:'Easy Single Pour',      ratio:16,   iced:false, pourTargets:[45,240], timing:{bloomSec:40, pourSec:[85]}, grind:-1, temp:'low',  brewTime:'2:00–2:30', tips:'Satu tuangan lambat lebih mudah dikontrol untuk pemula.', recipeReason:'Cuma satu tuangan biar nggak perlu mikirin timing atau jumlah air tiap tahap. Cocok banget kalau ini pertama kalinya kamu pakai V60.' },
-    { key:'classic',     name:'Classic 3-Pour',        ratio:15,   iced:false, pourTargets:[45,120,175,225], timing:{bloomSec:45, pourSec:[40,35,35]}, grind:0,  temp:'mid',  brewTime:'2:30–3:00', tips:'Proporsi klasik yang umum dipakai banyak brewer V60.', recipeReason:'Tuangan pertama dibuat lebih besar untuk membangun slurry dan membasahi kopi secara merata. Tuangan berikutnya lebih kecil agar aliran lebih stabil dan hasil akhir tetap clean.' },
-    { key:'bold',        name:'Bold & Comfort',        ratio:14,   iced:false, pourTargets:[45,115,165,210], timing:{bloomSec:50, pourSec:[35,35,40]}, grind:1,  temp:'high', brewTime:'3:00–3:30', tips:'Tuangan bertahap dengan agitasi ringan menghasilkan body lebih tebal.', recipeReason:'Tuangan dijaga lebih rapat dan disertai agitasi ringan supaya ekstraksi lebih dalam. Hasilnya body lebih tebal dan rasa lebih intens dari resep standar.' },
-    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, timing:{bloomSec:30, pourSec:[25,25]}, grind:0,  temp:'high', brewTime:'1:30–2:00', tips:'Diseduh langsung di atas es supaya rasa tetap segar dan tidak encer.', recipeReason:'Kopi diseduh lebih pekat lalu langsung menetes ke atas es supaya suhu cepat turun tanpa over-extract. Teknik ini menjaga rasa tetap segar walau sudah tercampur es.' }
+    { key:'recommended', name:'Dripnesia Recommended', ratio:15,   iced:false, pourTargets:[45,140,225], timing:{bloomPourSec:10, bloomRestSec:35, pourSec:[45,45], gapSec:[15]}, grind:0,  temp:'mid',  brewTime:'2:20–2:50', tips:'Dua tuangan besar yang simpel dan konsisten — default Dripnesia buat seduhan harian.', recipeReason:'Dua tuangan besar sudah cukup buat menjaga ekstraksi stabil tanpa perlu banyak tahap. Ini bukan rasio "paling ideal" secara mutlak — cuma titik awal paling praktis dari Dripnesia buat kamu mulai.' },
+    { key:'easy',        name:'Easy Single Pour',      ratio:16,   iced:false, pourTargets:[45,240], timing:{bloomPourSec:10, bloomRestSec:30, pourSec:[85], gapSec:[]}, grind:-1, temp:'low',  brewTime:'2:00–2:30', tips:'Satu tuangan lambat lebih mudah dikontrol untuk pemula.', recipeReason:'Cuma satu tuangan biar nggak perlu mikirin timing atau jumlah air tiap tahap. Cocok banget kalau ini pertama kalinya kamu pakai V60.' },
+    { key:'classic',     name:'Classic 3-Pour',        ratio:15,   iced:false, pourTargets:[45,120,175,225], timing:{bloomPourSec:10, bloomRestSec:30, pourSec:[15,15,15], gapSec:[20,15]}, grind:0,  temp:'mid',  brewTime:'2:30–3:00', tips:'Proporsi klasik yang umum dipakai banyak brewer V60.', recipeReason:'Tuangan pertama dibuat lebih besar untuk membangun slurry dan membasahi kopi secara merata. Tuangan berikutnya lebih kecil dengan jeda singkat di antaranya agar aliran tetap stabil dan hasil akhir clean.' },
+    { key:'bold',        name:'Bold & Comfort',        ratio:14,   iced:false, pourTargets:[45,115,165,210], timing:{bloomPourSec:10, bloomRestSec:40, pourSec:[20,20,20], gapSec:[25,25]}, grind:1,  temp:'high', brewTime:'3:00–3:30', tips:'Tuangan bertahap dengan jeda agitasi ringan menghasilkan body lebih tebal.', recipeReason:'Bloom dibuat lebih lama dan jeda antar-tuangan diperpanjang untuk agitasi ringan, supaya ekstraksi lebih dalam. Hasilnya body lebih tebal dan rasa lebih intens dari resep standar.' },
+    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, timing:{bloomPourSec:8, bloomRestSec:22, pourSec:[12,12], gapSec:[10]}, grind:0,  temp:'high', brewTime:'1:30–2:00', tips:'Diseduh langsung di atas es supaya rasa tetap segar dan tidak encer.', recipeReason:'Kopi diseduh lebih pekat dengan proses cepat lalu langsung menetes ke atas es supaya suhu cepat turun tanpa over-extract. Teknik ini menjaga rasa tetap segar walau sudah tercampur es.' }
   ],
   flat: [
-    { key:'recommended', name:'Dripnesia Recommended', ratio:12,   iced:false, pourTargets:[45,115,180], timing:{bloomSec:45, pourSec:[50,45]}, grind:1,  temp:'high',  brewTime:'2:45–3:15', tips:'Rasio lebih rapat bikin body lebih bulat dan pekat — signature rekomendasi Dripnesia untuk Flat-Bottom.', recipeReason:'Rasio 1:12 dipilih supaya rasanya lebih mantap dan pekat, sambil tetap memanfaatkan dasar rata dripper untuk body yang bulat. Dua tuangan besar tetap cukup menjaga ekstraksi stabil walau air yang dipakai lebih sedikit dari biasanya.' },
-    { key:'easy',        name:'Easy Two Pour',         ratio:15.5, iced:false, pourTargets:[45,140,233], timing:{bloomSec:40, pourSec:[60,55]}, grind:-1, temp:'low',  brewTime:'2:30–3:00', tips:'Dua tuangan sederhana, cocok untuk seduhan harian.', recipeReason:'Dua tuangan simpel tanpa perlu itung-itungan rumit. Pas buat seduhan harian yang cepat dan konsisten.' },
-    { key:'classic',     name:'Classic Pulse Pour',    ratio:15,   iced:false, pourTargets:[45,100,150,190,225], timing:{bloomSec:45, pourSec:[25,25,25,25]}, grind:0,  temp:'mid',  brewTime:'3:00–3:40', tips:'Tuangan kecil berulang (pulse) menjaga level air tetap stabil.', recipeReason:'Tuangan kecil berulang (pulse pour) menjaga level air di atas kopi tetap stabil sepanjang proses. Ini bikin ekstraksi lebih merata dan mengurangi risiko channeling.' },
-    { key:'bold',        name:'Bold & Rounded',        ratio:14.5, iced:false, pourTargets:[45,110,165,218], timing:{bloomSec:50, pourSec:[35,35,35]}, grind:1,  temp:'high', brewTime:'3:30–4:00', tips:'Body lebih bulat dan pekat dengan tuangan lebih rapat.', recipeReason:'Tuangan dibuat lebih rapat supaya kontak air dan kopi lebih lama. Hasilnya body lebih bulat dan rasa lebih pekat.' },
-    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, timing:{bloomSec:30, pourSec:[25,25]}, grind:0,  temp:'high', brewTime:'2:00–2:30', tips:'Sama seperti versi cone, diseduh langsung di atas es.', recipeReason:'Sama seperti versi cone, kopi diseduh pekat lalu langsung kena es supaya cepat dingin. Cocok kalau kamu suka Flat-Bottom tapi pengen versi dingin yang tetap clean.' }
+    { key:'recommended', name:'Dripnesia Recommended', ratio:15,   iced:false, pourTargets:[45,140,225], timing:{bloomPourSec:10, bloomRestSec:35, pourSec:[50,50], gapSec:[20]}, grind:0,  temp:'mid',  brewTime:'2:45–3:15', tips:'Dua tuangan besar yang simpel — default Dripnesia untuk Flat-Bottom.', recipeReason:'Dua tuangan besar memanfaatkan dasar rata dripper untuk body yang bulat, tanpa perlu banyak tahap. Titik awal paling praktis dari Dripnesia buat seduhan harian, bukan patokan ideal mutlak.' },
+    { key:'easy',        name:'Easy Two Pour',         ratio:15.5, iced:false, pourTargets:[45,140,233], timing:{bloomPourSec:10, bloomRestSec:30, pourSec:[60,55], gapSec:[15]}, grind:-1, temp:'low',  brewTime:'2:30–3:00', tips:'Dua tuangan sederhana, cocok untuk seduhan harian.', recipeReason:'Dua tuangan simpel tanpa perlu itung-itungan rumit. Pas buat seduhan harian yang cepat dan konsisten.' },
+    { key:'classic',     name:'Classic Pulse Pour',    ratio:15,   iced:false, pourTargets:[45,100,150,190,225], timing:{bloomPourSec:10, bloomRestSec:35, pourSec:[12,12,12,12], gapSec:[8,8,8]}, grind:0,  temp:'mid',  brewTime:'3:00–3:40', tips:'Tuangan kecil berulang (pulse) dengan jeda singkat yang konsisten menjaga level air tetap stabil.', recipeReason:'Tuangan kecil berulang (pulse pour) dengan jeda pendek yang konsisten menjaga level air di atas kopi tetap stabil sepanjang proses. Ini bikin ekstraksi lebih merata dan mengurangi risiko channeling.' },
+    { key:'bold',        name:'Bold & Rounded',        ratio:14.5, iced:false, pourTargets:[45,110,165,218], timing:{bloomPourSec:10, bloomRestSec:40, pourSec:[22,22,22], gapSec:[25,25]}, grind:1,  temp:'high', brewTime:'3:30–4:00', tips:'Body lebih bulat dan pekat dengan tuangan lebih rapat.', recipeReason:'Tuangan dan jeda dibuat lebih rapat supaya kontak air dan kopi lebih lama. Hasilnya body lebih bulat dan rasa lebih pekat.' },
+    { key:'iced',        name:'Iced Flash Brew',       ratio:15,   iced:true,  pourTargets:[45,95,146], icePct:0.35, timing:{bloomPourSec:8, bloomRestSec:22, pourSec:[14,14], gapSec:[12]}, grind:0,  temp:'high', brewTime:'2:00–2:30', tips:'Sama seperti versi cone, diseduh langsung di atas es.', recipeReason:'Sama seperti versi cone, kopi diseduh pekat lalu langsung kena es supaya cepat dingin. Cocok kalau kamu suka Flat-Bottom tapi pengen versi dingin yang tetap clean.' }
   ],
   frenchpress: [
     { key:'recommended', name:'Dripnesia Recommended',   ratio:15, iced:false, grind:0,  temp:'mid',  brewTime:'4:00 + rehat 2 menit', tips:'Pecahkan crust dan buang ampas mengapung untuk cangkir lebih bersih.', recipeReason:'Steep 4 menit penuh memberi waktu ekstraksi yang cukup tanpa perlu tuangan bertahap. Memecah crust di akhir membantu buang rasa pahit dari ampas yang mengapung.' },
@@ -420,6 +445,7 @@ let state = {
   manualRatio: {},    // per-brewer manual ratio memory, e.g { cone: 15.5 }
   bloomManual: {},    // per-brewer manual bloom grams, e.g { cone: 40 }
   tempManual: {},     // per-brewer manual temperature °C, e.g { cone: 91 }
+  tempRef: {},         // per-brewer chosen temperature reference key: 'sca'|'hario'|'dripnesia'|'custom'
   dose: 15,
   pourCount: null,
   pourManual: {},     // manual grams for pour index 0..N-2, e.g { 0: 80 }
@@ -427,6 +453,8 @@ let state = {
 };
 
 /* ============ VIEW MODE (Clean / Detail) ============ */
+// Switching modes only changes which controls are VISIBLE — it never mutates `state`, so the
+// selected recipe and every calculation stay exactly as they were, in both directions.
 let viewMode = 'detail';
 function setViewMode(mode){
   viewMode = mode;
@@ -434,12 +462,6 @@ function setViewMode(mode){
   document.querySelectorAll('#modeToggle .mt-opt').forEach(el=>{
     el.classList.toggle('active', el.dataset.mode===mode);
   });
-  if(mode==='clean' && state.style){
-    state.style = null;
-    state.lastPresetKey = null;
-    state.pourCount = null;
-    state.pourManual = {};
-  }
   renderAll();
 }
 document.querySelectorAll('#modeToggle .mt-opt').forEach(el=>{
@@ -482,51 +504,6 @@ function tagFromRatio(brewer, ratio){
   if(pos <= 0.33) return { grind:1, temp:'high' };
   if(pos >= 0.66) return { grind:-1, temp:'low' };
   return { grind:0, temp:'mid' };
-}
-
-/* Builds a flavor-expectation narrative from the ACTUAL recipe settings (ratio position on the
-   strength axis, grind/temp on the extraction axis — the same two axes as the SCA brewing
-   control chart — plus pour shape), instead of a fixed per-brewer description. */
-function buildFlavorNarrative(r){
-  const brewer = r.brewer;
-  const [lo,hi] = brewer.ratioBounds;
-  const pos = (r.ratio-lo)/(hi-lo); // 0 = strongest/pekat, 1 = lightest/ringan
-
-  let strengthLine;
-  if(pos <= 0.33){
-    strengthLine = `Rasio 1:${r.ratio} tergolong pekat (dekat batas kuat) — ekspektasi body lebih tebal dan rasa lebih intens, tapi juga lebih gampang kerasa pahit kalau ekstraksinya kelebihan.`;
-  } else if(pos >= 0.66){
-    strengthLine = `Rasio 1:${r.ratio} tergolong ringan (dekat batas encer) — ekspektasi rasa lebih clean dengan acidity lebih menonjol, tapi berisiko terasa hambar/underwhelming kalau ekstraksinya kurang.`;
-  } else {
-    strengthLine = `Rasio 1:${r.ratio} ada di titik seimbang — mendekati rentang yang biasa dipakai sebagai acuan strength standar (sekitar 1:15–1:17), jadi potensi rasanya balance antara body dan clarity.`;
-  }
-
-  const fineGrinds = ['Fine','Medium-Fine'];
-  const coarseGrinds = ['Coarse','Medium-Coarse'];
-  let extractionLine;
-  if(fineGrinds.includes(r.grind)){
-    extractionLine = `Dipadu grind ${r.grind} dan suhu ${r.temp}°C, kontak air-kopi jadi lebih dalam — cocok buat menyeimbangkan rasio pekat tadi, tapi jaga jangan sampai over-extract.`;
-  } else if(coarseGrinds.includes(r.grind)){
-    extractionLine = `Dipadu grind ${r.grind} dan suhu ${r.temp}°C, ekstraksi berjalan lebih ringan dan cepat — cocok menjaga rasio yang lebih encer tadi supaya nggak makin hambar.`;
-  } else {
-    extractionLine = `Dipadu grind ${r.grind} dan suhu ${r.temp}°C, ekstraksi berjalan pada level standar — nggak condong ke salah satu arah.`;
-  }
-
-  let pourLine = '';
-  if(r.pourPlan && r.pourPlan.length >= 2){
-    const total = r.pourPlan.reduce((a,b)=>a+b,0);
-    const firstShare = r.pourPlan[0]/total;
-    const lastShare = r.pourPlan[r.pourPlan.length-1]/total;
-    if(firstShare - lastShare > 0.12){
-      pourLine = ' Tuangan awal yang lebih besar bikin ekstraksi mulai lebih kuat sejak awal, jadi body-nya cenderung lebih tebal.';
-    } else if(lastShare - firstShare > 0.12){
-      pourLine = ' Tuangan akhir yang lebih besar melarutkan sisa rasa lebih lembut, jadi hasil akhirnya cenderung lebih ringan dan clean.';
-    } else {
-      pourLine = ' Tuangan yang rata di tiap tahap menjaga ekstraksi tetap stabil dari awal sampai akhir.';
-    }
-  }
-
-  return strengthLine + ' ' + extractionLine + pourLine;
 }
 
 /* ============ RENDER: BREWER TABS ============ */
@@ -622,6 +599,12 @@ function unlockToCustom(){
   state.manualRatio[state.brewer] = r.ratio;
   state.bloomManual[state.brewer] = r.bloomWater;
   state.tempManual[state.brewer] = r.temp;
+  // Make sure the active temperature reference's range actually contains the preset's
+  // preserved temperature (e.g. a cold "Easy" preset temp falling below the SCA range) —
+  // otherwise fall back to Custom so the value and the slider range stay consistent.
+  const curRef = getTempRef(state.brewer);
+  const [refLo, refHi] = TEMP_REFS[curRef].range;
+  if(r.temp < refLo || r.temp > refHi) state.tempRef[state.brewer] = 'custom';
   if(r.pourPlan){
     state.pourCount = r.pourPlan.length;
     state.pourManual = {};
@@ -717,6 +700,20 @@ function getBloomManual(brewerKey, autoBloom){
 function getTempManual(brewerKey, autoTemp){
   return state.tempManual[brewerKey]!==undefined ? state.tempManual[brewerKey] : autoTemp;
 }
+function getTempRef(brewerKey){
+  // Defensive: a value that no longer exists in TEMP_REFS (e.g. an old save using the removed
+  // 'hario'/'dripnesia' reference identifiers) safely migrates to the SCA default instead of
+  // crashing on lookup.
+  const ref = state.tempRef[brewerKey];
+  return (ref && TEMP_REFS[ref]) ? ref : 'sca';
+}
+function setTempRef(ref){
+  state.tempRef[state.brewer] = ref;
+  const [lo,hi] = TEMP_REFS[ref].range;
+  const cur = getTempManual(state.brewer, Math.round((lo+hi)/2));
+  state.tempManual[state.brewer] = Math.max(lo, Math.min(hi, cur));
+  renderAll();
+}
 /* SMART ROUNDING: scales a preset's fixed cumulative pour targets (defined at a 15g base
    dose) to the user's actual dose, rounding intermediate cumulative targets to convenient
    5g increments for easy scale-reading while preserving the EXACT final total water (never
@@ -750,28 +747,56 @@ function scalePourTargets(baseTargets, dose, baseDose){
 
 /* Sequentially allocates pour amounts: pours 0..N-2 are user-adjustable (clamped to what's
    left at that point), the final pour always absorbs whatever water remains. */
+const MIN_POUR_G = 1; // smallest allowed amount for any single active pour — never zero/negative
+/* Allocates `remaining` grams across `pourCount` pours, honoring any manual (user-dragged)
+   amounts for earlier pours whenever they remain valid. Unlike a naive clamp-to-what's-left
+   pass, this reserves at least MIN_POUR_G for every pour still to come (including the final
+   one) BEFORE deciding how much an earlier pour may take — so dragging one slider up can never
+   starve a later pour down to zero or negative. The total never changes: whatever is held back
+   from an earlier pour simply stays in `left` for the remaining steps to share. */
 function computePourPlan(pourCount, remaining){
-  const plan = [], leftBefore = [];
-  let left = remaining;
+  const plan = [], leftBefore = [], maxAllowed = [];
+  let left = Math.max(0, remaining);
   for(let i=0;i<pourCount-1;i++){
     leftBefore.push(left);
-    const stepsLeft = pourCount - i;
+    const stepsLeft = pourCount - i;       // this pour + everything after it, including final
+    const stepsAfter = stepsLeft - 1;      // pours strictly after this one (final included)
+    const reserveForLater = stepsAfter * MIN_POUR_G;
+    // this pour may take at most what's left minus what later pours each need at minimum —
+    // but never less than MIN_POUR_G itself (falls back gracefully if `left` is too small to
+    // reserve everything; the loop below still can't push any single pour below 0)
+    const maxForThisPour = Math.max(MIN_POUR_G, left - reserveForLater);
+    maxAllowed.push(maxForThisPour);
     const def = Math.floor(left/stepsLeft);
     let v = state.pourManual[i]!==undefined ? state.pourManual[i] : def;
-    v = Math.max(0, Math.min(v, left));
+    // Order matters: cap to the reserve ceiling and raise to the positivity floor first, but
+    // `left` is always the FINAL, outermost bound — total water actually available can never
+    // be exceeded, even in an edge case where bloom (or an upstream change) left less than
+    // MIN_POUR_G for this step. Positivity is a best-effort goal; conservation of total water
+    // is the one invariant that is never allowed to break.
+    v = Math.min(Math.max(MIN_POUR_G, Math.min(v, maxForThisPour)), left);
     state.pourManual[i] = v;
     plan.push(v);
     left -= v;
   }
-  plan.push(left);
-  return { plan, leftBefore };
+  // Final pour takes whatever remains. The reservation above keeps this positive in every
+  // normal case; only an extreme, user-forced edge (bloom set so high almost nothing is left
+  // for pours at all) could still leave less than MIN_POUR_G here — clamped to 0 rather than
+  // going negative, since total water must stay exactly correct.
+  plan.push(Math.max(0, left));
+  return { plan, leftBefore, maxAllowed };
 }
 
 /* ============ RECIPE COMPUTE ============ */
 function buildRecipe(){
   const brewer = BREWERS[state.brewer];
-  const styleObj = findStyle(state.style);
   const dose = state.dose;
+
+  // Simple and Detail always read the SAME underlying state.style — view mode only changes
+  // which controls are visible, never which recipe is active. (A fresh first-time user gets a
+  // real default preset selected once at startup — see INIT at the bottom of this script —
+  // rather than a display-only substitute computed here.)
+  const styleObj = state.style ? currentStyles().find(s=>s.key===state.style) : null;
 
   let name, ratio, isIced, grindAdj, tempTag, brewTime, tips, recipeReason, icePct;
 
@@ -798,11 +823,24 @@ function buildRecipe(){
     icePct = 0.3;
   }
 
-  const autoTemp = pickTemp(brewer, tempTag, isIced);
-  const temp = styleObj ? autoTemp : getTempManual(state.brewer, autoTemp);
+  // TEMPERATURE REFERENCE SYSTEM: curated presets keep their own exact temperature (never
+  // overwritten by a generic reference, and never labeled as SCA-endorsed). Custom mode
+  // resolves against whichever of the two references the user picked (SCA / Custom-Explore);
+  // changing the ratio never, by itself, auto-changes temperature — only an explicit
+  // reference/slider choice does.
+  let autoTemp, temp;
+  if(styleObj){
+    autoTemp = pickTemp(brewer, tempTag, isIced);
+    temp = autoTemp;
+  } else {
+    const ref = getTempRef(state.brewer);
+    const [lo,hi] = TEMP_REFS[ref].range;
+    autoTemp = Math.round((lo+hi)/2);
+    temp = getTempManual(state.brewer, autoTemp);
+  }
   const grind = grindFor(brewer, grindAdj);
 
-  let totalWater, hotWater, iceGrams, bloomWater, autoBloom, pourPlan = null, pourLeftBefore = null;
+  let totalWater, hotWater, iceGrams, bloomWater, autoBloom, bloomMax, pourPlan = null, pourLeftBefore = null, pourMaxAllowed = null;
 
   if(styleObj && brewer.family==='pourover' && styleObj.pourTargets){
     // PRESET: fixed cumulative targets from the recipe database, scaled proportionally by dose
@@ -810,6 +848,7 @@ function buildRecipe(){
     const scaledTargets = scalePourTargets(styleObj.pourTargets, dose, 15);
     bloomWater = scaledTargets[0];
     autoBloom = bloomWater;
+    bloomMax = bloomWater; // preset bloom is fixed/curated — slider is disabled, so this is just its display ceiling
     const lastTarget = scaledTargets[scaledTargets.length-1];
     if(isIced){
       hotWater = lastTarget;
@@ -831,15 +870,27 @@ function buildRecipe(){
       hotWater = totalWater - iceGrams;
     }
     autoBloom = brewer.bloomMult ? Math.round(dose*brewer.bloomMult) : 0;
-    bloomWater = brewer.bloomMult
-      ? Math.max(0, Math.min(styleObj ? autoBloom : getBloomManual(state.brewer, autoBloom), hotWater-1))
-      : 0;
     if(brewer.family==='pourover'){
+      // Bloom must never eat into water the remaining pours need at minimum — cap it so at
+      // least pourCount * MIN_POUR_G always stays available for pouring, however high the
+      // bloom slider is dragged (or whatever it was left at before dose/ratio/pour-count
+      // changed). This is what keeps bloom + sum(pourPlan) === hotWater an absolute invariant
+      // instead of something that can be violated by an extreme manual bloom value.
       const pourCount = state.pourCount || brewer.customPourDefault || 3;
+      bloomMax = brewer.bloomMult ? Math.max(0, hotWater - pourCount*MIN_POUR_G) : 0;
+      bloomWater = brewer.bloomMult
+        ? Math.max(0, Math.min(styleObj ? autoBloom : getBloomManual(state.brewer, autoBloom), bloomMax))
+        : 0;
       const remaining = hotWater - bloomWater;
       const planResult = computePourPlan(pourCount, remaining);
       pourPlan = planResult.plan;
       pourLeftBefore = planResult.leftBefore;
+      pourMaxAllowed = planResult.maxAllowed;
+    } else {
+      bloomMax = brewer.bloomMult ? Math.max(0, hotWater-1) : 0;
+      bloomWater = brewer.bloomMult
+        ? Math.max(0, Math.min(styleObj ? autoBloom : getBloomManual(state.brewer, autoBloom), bloomMax))
+        : 0;
     }
   }
 
@@ -847,40 +898,83 @@ function buildRecipe(){
   // custom/manual recipes fall back to a sensible generic pacing (handled inside buildTable).
   const timing = styleObj && styleObj.timing ? styleObj.timing : null;
 
-  const table = buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, state.icePlacement, timing);
+  // HOT/ICED YIELD MATH: distinguishes total water from what you actually get to drink.
+  // RETENTION_PER_GRAM and ICE_MELT_ASSUMED are home-brewing rules of thumb, not lab-measured
+  // figures — the resulting yield is always shown and labeled as an estimate, never a guarantee.
+  const RETENTION_PER_GRAM = 2; // grams of brew water retained by spent grounds, per gram of dose
+  const ICE_MELT_ASSUMED = 0.7; // assumed fraction of ice melted by typical drinking time
+  const retention = Math.round(dose * RETENTION_PER_GRAM);
+  let estYield;
+  if(isIced){
+    const meltedWater = Math.round(iceGrams * ICE_MELT_ASSUMED);
+    estYield = Math.max(0, hotWater - retention + meltedWater);
+  } else {
+    estYield = Math.max(0, hotWater - retention);
+  }
+  const ratioHotDisplay = +(hotWater/dose).toFixed(1);
+  const ratioTotalDisplay = +(totalWater/dose).toFixed(1);
 
-  return { brewer, name, dose, ratio, totalWater, hotWater, iceGrams, temp, grind, bloomWater, autoBloom, table, isIced, pourCount: pourPlan?pourPlan.length:null, pourPlan, pourLeftBefore, brewTime, tips, recipeReason, isCustom: !styleObj };
+  const built = buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, state.icePlacement, timing);
+
+  // ESTIMATED COMPLETION must never start before the final pour actually finishes. Rather than
+  // trust a hand-written range (which can silently drift out of sync whenever a preset's pour
+  // timing is tuned), the displayed range for pour-over is always derived FROM the real
+  // pourEndTime plus a realistic post-pour drawdown window — an estimated range, not an exact
+  // drawdown time, and brewer-specific (Flat-Bottom's wider, flatter bed drains a bit slower
+  // than a Cone dripper). This keeps the invariant true for every current and future preset,
+  // and for custom pours too.
+  if(brewer.family==='pourover' && built.pourEndTime && brewer.drawdownRangeSec){
+    const pourEndSec = parseTimeToSec(built.pourEndTime);
+    const [ddLo, ddHi] = brewer.drawdownRangeSec;
+    brewTime = fmtTime(pourEndSec + ddLo) + '–' + fmtTime(pourEndSec + ddHi);
+  }
+
+  return { brewer, name, dose, ratio, ratioHotDisplay, ratioTotalDisplay, totalWater, hotWater, iceGrams, retention, estYield, iceMeltPct: Math.round(ICE_MELT_ASSUMED*100), temp, tempRef: styleObj ? null : getTempRef(state.brewer), grind, bloomWater, autoBloom, bloomMax, table: built.rows, pourEndTime: built.pourEndTime, isIced, pourCount: pourPlan?pourPlan.length:null, pourPlan, pourLeftBefore, pourMaxAllowed, brewTime, tips, recipeReason, isCustom: !styleObj };
 }
 
+/* buildTable returns { rows, pourEndTime }. The underlying timing engine still computes bloom
+   duration, inter-pour rest and recipe-specific pour start/end times in full (so the schedule
+   itself is unchanged) — but standalone "waiting" rows are no longer rendered as their own
+   table line. Each visible row's Time is the START of that step (a single timestamp, not a
+   start–end range), with the cumulative scale target in Total as the visually prioritized
+   number; the overall estimated completion range stays separate (brewTime, surfaced by the
+   caller), so a pour's start time is never confused with when brewing is actually done. */
 function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, icePlacement, timing){
   const rows = [];
+  let pourEndTime = null;
   if(brewer.family==='pourover'){
     if(isIced && icePlacement==='start'){
       rows.push({step:'Taruh Es & Tare Timbangan', time:'00:00', add:iceGrams+' g', total:'0 g (tare)'});
     }
     let cum = bloomWater;
     let t = 0;
-    const bloomSec = timing && timing.bloomSec!==undefined ? timing.bloomSec : 40;
     if(bloomWater>0){
-      const t2 = t + bloomSec;
-      rows.push({step:'Bloom', time:fmtTime(t)+'–'+fmtTime(t2), add:bloomWater+' g', total:cum+' g'});
-      t = t2;
+      rows.push({step:'Bloom', time:fmtTime(t), add:bloomWater+' g', total:cum+' g'});
+      // engine still accounts for the full bloom phase (quick pour + rest) before pouring starts
+      if(timing && timing.bloomPourSec!==undefined){
+        t = timing.bloomPourSec + (timing.bloomRestSec||0);
+      } else {
+        t = (timing && timing.bloomSec!==undefined) ? timing.bloomSec : 40;
+      }
     }
     pourPlan.forEach((amt,i)=>{
       const isLast = i===pourPlan.length-1;
       cum += amt;
-      const dur = timing && timing.pourSec && timing.pourSec[i]!==undefined ? timing.pourSec[i] : 35;
-      const t2 = t + dur;
       const label = pourPlan.length===1 ? 'Tuangan Utama' : (isLast ? 'Tuangan Akhir' : 'Tuangan '+(i+1));
-      rows.push({step:label, time:fmtTime(t)+'–'+fmtTime(t2), add:amt+' g', total:cum+' g'});
-      t = t2;
+      rows.push({step:label, time:fmtTime(t), add:amt+' g', total:cum+' g'});
+      const dur = timing && timing.pourSec && timing.pourSec[i]!==undefined ? timing.pourSec[i] : 35;
+      const gap = timing && timing.gapSec && timing.gapSec[i]!==undefined ? timing.gapSec[i] : 0;
+      t = t + dur; // the moment pouring for this step actually stops
+      if(isLast) pourEndTime = fmtTime(t);
+      if(!isLast) t += gap; // rest before the next pour starts — kept in the schedule, just not shown as its own row
     });
     if(isIced && icePlacement==='end') rows.push({step:'Tuang ke Es', time:'—', add:iceGrams+' g', total:(cum+iceGrams)+' g'});
   }
   else if(brewer.family==='immersion'){
-    // Immersion brewing: steep as a whole, not pour-over pulses. brewTime is this preset's
-    // own steep duration (it already differs per recipe: 4:00, 4:00, 3:00), so it is never a
-    // generic pour-count-derived figure, and it is never mislabeled as a "pour" completion time.
+    // Immersion brewing: steep as a whole, not pour-over pulses — these are meaningful actions
+    // (adding water, steeping, pressing), not decorative waiting rows, so they stay visible.
+    // brewTime is this preset's own steep duration (already distinct per recipe: 4:00, 4:00,
+    // 3:00), never a generic pour-count-derived figure, and never mislabeled as a pour time.
     rows.push({step:'Tuang Air', time:'00:00', add:hotWater+' g', total:hotWater+' g'});
     rows.push({step:'Steep', time:brewTime, add:'—', total:hotWater+' g'});
     rows.push({step:'Tekan Plunger', time:'—', add:'—', total:hotWater+' g'});
@@ -888,18 +982,21 @@ function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIc
   }
   else if(brewer.family==='aeropress'){
     const bloomSec = timing && timing.bloomSec!==undefined ? timing.bloomSec : 30;
-    const mainEnd = bloomSec + 10;
-    if(bloomWater>0) rows.push({step:'Bloom', time:'00:00–'+fmtTime(bloomSec), add:bloomWater+' g', total:bloomWater+' g'});
-    rows.push({step: bloomWater>0 ? 'Tuang Utama' : 'Tuang Air', time:(bloomWater>0?fmtTime(bloomSec):'00:00')+'–'+fmtTime(mainEnd), add:(hotWater-bloomWater)+' g', total:hotWater+' g'});
+    if(bloomWater>0) rows.push({step:'Bloom', time:'00:00', add:bloomWater+' g', total:bloomWater+' g'});
+    rows.push({step: bloomWater>0 ? 'Tuang Utama' : 'Tuang Air', time: bloomWater>0 ? fmtTime(bloomSec) : '00:00', add:(hotWater-bloomWater)+' g', total:hotWater+' g'});
     rows.push({step:'Steep', time:brewTime, add:'—', total:hotWater+' g'});
     rows.push({step:'Tekan', time:'—', add:'—', total:hotWater+' g'});
     if(isIced) rows.push({step:'Tekan ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
   }
-  return rows;
+  return { rows, pourEndTime };
 }
 function fmtTime(sec){
   const m = Math.floor(sec/60), s = sec%60;
   return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function parseTimeToSec(mmss){
+  const m = /^(\d+):(\d+)/.exec(mmss);
+  return m ? parseInt(m[1],10)*60 + parseInt(m[2],10) : null;
 }
 
 /* ============ RENDER: ADVANCED (bloom + pour count) ============ */
@@ -911,7 +1008,7 @@ function renderBloomSlider(r){
   }
   block.style.display = '';
   const slider = document.getElementById('bloomSlider');
-  slider.max = r.hotWater - 1;
+  slider.max = r.bloomMax;
   slider.value = r.bloomWater;
   document.getElementById('bloomNum').textContent = r.bloomWater;
 }
@@ -922,15 +1019,48 @@ document.getElementById('bloomSlider').addEventListener('input', e=>{
 
 function renderTempSlider(r){
   const slider = document.getElementById('tempSlider');
-  const [lo,hi] = r.brewer.tempRange;
+  const locked = isLocked();
+  let lo, hi;
+  if(locked){
+    // A locked preset's own temperature (r.temp) can sit outside the brewer's general
+    // tempRange — e.g. an iced "high" pour runs a couple degrees hotter than the hot range's
+    // top. Widen the displayed bounds to always include the actual value so the slider never
+    // silently clips it; the preset's number itself never changes.
+    const [bLo, bHi] = r.brewer.tempRange;
+    lo = Math.min(bLo, r.temp);
+    hi = Math.max(bHi, r.temp);
+  } else {
+    const ref = getTempRef(state.brewer);
+    [lo,hi] = TEMP_REFS[ref].range;
+  }
   slider.min = lo; slider.max = hi;
   slider.value = r.temp;
   document.getElementById('tempNum').textContent = r.temp;
+  renderTempRefChips(r, locked);
 }
 document.getElementById('tempSlider').addEventListener('input', e=>{
   state.tempManual[state.brewer] = parseFloat(e.target.value);
   renderAll();
 });
+function renderTempRefChips(r, locked){
+  const wrap = document.getElementById('tempRefChips');
+  const srcEl = document.getElementById('tempRefSource');
+  wrap.style.display = locked ? 'none' : '';
+  if(locked){
+    srcEl.textContent = 'Sumber: resep preset — suhu ini mengikuti kurasi Dripnesia untuk resep ini, bukan rentang referensi umum, dan tidak ditimpa otomatis oleh SCA Reference atau Custom.';
+    return;
+  }
+  const ref = getTempRef(state.brewer);
+  wrap.innerHTML = '';
+  Object.keys(TEMP_REFS).forEach(key=>{
+    const d = document.createElement('div');
+    d.className = 'chip text' + (ref===key?' active':'');
+    d.textContent = TEMP_REFS[key].label;
+    d.onclick = ()=> setTempRef(key);
+    wrap.appendChild(d);
+  });
+  srcEl.textContent = 'Sumber: ' + TEMP_REFS[ref].source;
+}
 
 function renderPourPlan(r){
   const block = document.getElementById('pourPlanBlock');
@@ -966,7 +1096,7 @@ function renderPourPlan(r){
       if(locked || isLast){
         row.innerHTML = `<div class="adv-label">Tuangan ${i+1} <span class="val">${locked?'sesuai preset':'otomatis'}</span></div><div class="adv-readonly" id="pour-readout-${i}">${amt} g</div>`;
       } else {
-        row.innerHTML = `<div class="adv-label">Tuangan ${i+1} <span class="val" id="pour-val-${i}">${amt} g</span></div><input type="range" id="pour-slider-${i}" min="0" max="${r.pourLeftBefore[i]}" step="1" value="${amt}" data-pour-idx="${i}">`;
+        row.innerHTML = `<div class="adv-label">Tuangan ${i+1} <span class="val" id="pour-val-${i}">${amt} g</span></div><input type="range" id="pour-slider-${i}" min="${MIN_POUR_G}" max="${r.pourMaxAllowed[i]}" step="1" value="${amt}" data-pour-idx="${i}">`;
       }
       wrap.appendChild(row);
     });
@@ -983,7 +1113,8 @@ function renderPourPlan(r){
         document.getElementById('pour-readout-'+i).textContent = amt+' g';
       } else {
         const slider = document.getElementById('pour-slider-'+i);
-        slider.max = r.pourLeftBefore[i];
+        slider.min = MIN_POUR_G;
+        slider.max = r.pourMaxAllowed[i];
         if(document.activeElement !== slider) slider.value = amt; // don't fight the slider the user is actively dragging
         document.getElementById('pour-val-'+i).textContent = amt+' g';
       }
@@ -995,22 +1126,29 @@ function renderPourPlan(r){
 function renderSheet(r){
   const out = document.getElementById('sheetOutput');
 
+  // r.pourEndTime (last pour-completion time) is still computed internally by buildTable() and
+  // feeds the "Estimasi total" drawdown calculation above — just no longer shown as its own
+  // line in the summary, to keep the card focused on the one completion estimate.
+
   const keynum = r.isIced ? `
     <div class="keynum-grid">
       <div class="kn"><div class="kn-label">Dosis kopi</div><div class="kn-value purple">${r.dose} g</div></div>
       <div class="kn"><div class="kn-label">Air panas</div><div class="kn-value iced">${r.hotWater} g</div></div>
       <div class="kn"><div class="kn-label">Es</div><div class="kn-value iced">${r.iceGrams} g</div></div>
-      <div class="kn"><div class="kn-label">Rasio akhir</div><div class="kn-value">1:${r.ratio}</div></div>
-      <div class="kn full"><div class="kn-label">Total minuman jadi</div><div class="kn-value">${r.totalWater} g</div></div>
-    </div>` : `
+      <div class="kn"><div class="kn-label">Rasio (air panas)</div><div class="kn-value">1:${r.ratioHotDisplay}</div></div>
+      <div class="kn"><div class="kn-label">Rasio (total + es)</div><div class="kn-value">1:${r.ratioTotalDisplay}</div></div>
+      <div class="kn full"><div class="kn-label">Estimasi minuman jadi</div><div class="kn-value">~${r.estYield} g</div></div>
+    </div>
+    <div class="hint-box" style="margin-top:-6px;">Estimasi minuman jadi memperhitungkan air yang tertahan di ampas kopi dan asumsi sekitar ${r.iceMeltPct}% es sudah mencair saat diminum — ini perkiraan, bukan ukuran pasti, dan es tidak selalu mencair sepenuhnya. Rasio "air panas" dihitung dari air seduh saja; rasio "total + es" memasukkan bobot es ke dalam total air.</div>` : `
     <div class="keynum-grid">
       <div class="kn"><div class="kn-label">Dosis kopi</div><div class="kn-value purple">${r.dose} g</div></div>
       <div class="kn"><div class="kn-label">Total air</div><div class="kn-value">${r.totalWater} g</div></div>
-      <div class="kn"><div class="kn-label">Rasio</div><div class="kn-value">1:${r.ratio}</div></div>
-      <div class="kn"><div class="kn-label">Minuman jadi</div><div class="kn-value">${r.totalWater} g</div></div>
-    </div>`;
+      <div class="kn"><div class="kn-label">Rasio</div><div class="kn-value">1:${r.ratioHotDisplay}</div></div>
+      <div class="kn"><div class="kn-label">Estimasi minuman jadi</div><div class="kn-value">~${r.estYield} g</div></div>
+    </div>
+    <div class="hint-box" style="margin-top:-6px;">Sebagian air seduh tertahan di ampas kopi, jadi minuman jadi biasanya sedikit lebih kecil dari total air — angka di atas perkiraan, bukan ukuran pasti.</div>`;
 
-  const tableRows = r.table.map(row=>`<tr><td>${row.step}</td><td class="mono">${row.time}</td><td class="mono">${row.add}</td><td class="mono">${row.total}</td></tr>`).join('');
+  const tableRows = r.table.map(row=>`<tr><td>${row.step}</td><td class="mono">${row.time}</td><td class="mono">${row.add}</td><td class="mono total-cell">${row.total}</td></tr>`).join('');
 
   out.innerHTML = `
     <div class="sheet-eyebrow ${r.isIced?'':'hot'}">${r.isIced?'Iced':'Hot'} · ${r.isCustom ? 'Racikan Sendiri' : r.name}</div>
@@ -1022,8 +1160,9 @@ function renderSheet(r){
     <div class="subrow">
       <div class="sr-item"><div class="sr-label">Grind</div><div class="sr-value">${r.grind}</div></div>
       <div class="sr-item"><div class="sr-label">Suhu</div><div class="sr-value">${r.temp}°C</div></div>
-      <div class="sr-item"><div class="sr-label">Target waktu</div><div class="sr-value">${r.brewTime}</div></div>
+      <div class="sr-item"><div class="sr-label">Estimasi total (sampai menetes)</div><div class="sr-value">${r.brewTime}</div></div>
     </div>
+    <div class="hint-box" style="margin-top:-6px;">Waktu di atas titik awal perkiraan, bukan patokan pasti — air masih perlu waktu untuk menetes sampai habis setelah tuangan terakhir.</div>
 
     <table class="brewtable">
       <thead><tr><th>Step</th><th>Time</th><th>Add</th><th>Total</th></tr></thead>
@@ -1032,13 +1171,8 @@ function renderSheet(r){
 
     <div class="tips-box"><b>Tips:</b> ${r.tips}</div>
 
-    <div class="flavor-block">
-      <div class="fb-label">Ekspektasi karakter seduhan</div>
-      <p>${buildFlavorNarrative(r)}</p>
-      <div class="fb-note">Karakter dasar ${r.brewer.name}: ${r.brewer.character}. Angka ini titik awal, bukan patokan mutlak — brew your way, hasilnya tetap sah.</div>
-    </div>
-
-    ${r.isCustom ? '' : `
+    ${r.isCustom ? `
+    <div class="hint-box" style="margin-top:-6px;">Ini racikanmu sendiri. Coba seduh, cicipi hasilnya, lalu sesuaikan satu variabel setiap percobaan.</div>` : `
     <div class="ts-block">
       <div class="ts-item" id="eduItem">
         <button class="ts-q" onclick="toggleEdu()">Kenapa recipe ini dibuat seperti ini?<span class="chev">+</span></button>
@@ -1093,7 +1227,10 @@ function renderAll(){
   renderSheet(r);
 }
 function resetAll(){
-  state = { brewer:'cone', drink:'hot', style:null, lastPresetKey:null, manualRatio:{}, bloomManual:{}, tempManual:{}, dose:15, pourCount:null, pourManual:{}, icePlacement:'start' };
+  // "Mulai resep baru" returns to the same real, actual starting recipe as a brand-new session
+  // (Cone Dripper, Hot, 15g, Dripnesia Recommended) rather than an unexplained custom state —
+  // matching the one-time INIT default at the bottom of this script.
+  state = { brewer:'cone', drink:'hot', style:'recommended', lastPresetKey:null, manualRatio:{}, bloomManual:{}, tempManual:{}, tempRef:{}, dose:15, pourCount:null, pourManual:{}, icePlacement:'start' };
   renderAll();
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -1104,9 +1241,9 @@ function recipeAsText(){
   let lines = [];
   lines.push(`Dripnesia Brew Guide — ${r.brewer.name} · ${r.isCustom?'Racikan Sendiri':r.name} (${r.isIced?'Iced':'Hot'})`);
   lines.push(`Dosis kopi: ${r.dose} g`);
-  if(r.isIced){ lines.push(`Air panas: ${r.hotWater} g`); lines.push(`Es: ${r.iceGrams} g`); lines.push(`Total minuman: ${r.totalWater} g`); }
-  else { lines.push(`Total air: ${r.totalWater} g`); }
-  lines.push(`Rasio: 1:${r.ratio}  ·  Grind: ${r.grind}  ·  Suhu: ${r.temp}°C  ·  Waktu: ${r.brewTime}`);
+  if(r.isIced){ lines.push(`Air panas: ${r.hotWater} g`); lines.push(`Es: ${r.iceGrams} g`); lines.push(`Rasio (air panas): 1:${r.ratioHotDisplay}  ·  Rasio (total+es): 1:${r.ratioTotalDisplay}`); lines.push(`Estimasi minuman jadi: ~${r.estYield} g (perkiraan, bukan ukuran pasti)`); }
+  else { lines.push(`Total air: ${r.totalWater} g`); lines.push(`Rasio: 1:${r.ratioHotDisplay}`); lines.push(`Estimasi minuman jadi: ~${r.estYield} g (perkiraan, bukan ukuran pasti)`); }
+  lines.push(`Grind: ${r.grind}  ·  Suhu: ${r.temp}°C  ·  Estimasi total (sampai menetes): ${r.brewTime} — titik awal, bukan patokan pasti`);
   lines.push('');
   lines.push('Step | Time | Add | Total');
   r.table.forEach(row=> lines.push(`${row.step} | ${row.time} | ${row.add} | ${row.total}`));
@@ -1135,7 +1272,22 @@ function saveRecipe(){
     id: Date.now(),
     label: `${r.brewer.name} · ${r.isCustom?'Racikan Sendiri':r.name} (${r.isIced?'Iced':'Hot'})`,
     ts: new Date().toLocaleString('id-ID'),
-    state: { brewer: state.brewer, drink: state.drink, style: state.style, dose: r.dose, manualRatio: r.isCustom ? r.ratio : undefined, pourCount: state.pourCount, icePlacement: state.icePlacement }
+    // Full fidelity save: every manual control the recipe actually used, so re-loading it
+    // reproduces it exactly rather than silently resetting a custom pour distribution.
+    state: {
+      brewer: state.brewer,
+      drink: state.drink,
+      style: state.style,
+      dose: state.dose,
+      pourCount: state.pourCount,
+      icePlacement: state.icePlacement,
+      manualRatio: state.manualRatio[state.brewer],
+      bloomManual: state.bloomManual[state.brewer],
+      tempManual: state.tempManual[state.brewer],
+      tempRef: state.tempRef[state.brewer],
+      pourManual: Object.assign({}, state.pourManual),
+      isCustom: r.isCustom
+    }
   });
   setSaved(list.slice(0,30));
   showToast('Resep disimpan');
@@ -1161,8 +1313,32 @@ function closeSaved(){ document.getElementById('savedOverlay').classList.remove(
 function loadSaved(id){
   const item = getSaved().find(x=>x.id===id);
   if(!item) return;
-  state = { brewer:item.state.brewer, drink:item.state.drink, style:item.state.style, lastPresetKey:null, manualRatio:{}, bloomManual:{}, tempManual:{}, dose:item.state.dose, pourCount:item.state.pourCount||null, pourManual:{}, icePlacement:item.state.icePlacement||'start' };
-  if(item.state.manualRatio!==undefined) state.manualRatio[item.state.brewer] = item.state.manualRatio;
+  const s = item.state || {};
+  // Backward-compatible: older saves missing newer fields (tempRef, bloomManual, pourManual,
+  // isCustom) just fall back to defaults instead of crashing.
+  state = {
+    brewer: s.brewer,
+    drink: s.drink || 'hot',
+    style: s.isCustom ? null : (s.style || null),
+    lastPresetKey: null,
+    manualRatio: {},
+    bloomManual: {},
+    tempManual: {},
+    tempRef: {},
+    dose: s.dose!==undefined ? s.dose : 15,
+    pourCount: s.pourCount || null,
+    pourManual: {},
+    icePlacement: s.icePlacement || 'start',
+  };
+  if(!BREWERS[state.brewer]) state.brewer = 'cone'; // guard against a stale/removed brewer key
+  if(state.style && !(STYLES[state.brewer]||[]).find(x=>x.key===state.style)) state.style = null;
+  if(s.manualRatio!==undefined) state.manualRatio[state.brewer] = s.manualRatio;
+  if(s.bloomManual!==undefined) state.bloomManual[state.brewer] = s.bloomManual;
+  if(s.tempManual!==undefined) state.tempManual[state.brewer] = s.tempManual;
+  if(s.tempRef!==undefined) state.tempRef[state.brewer] = s.tempRef;
+  if(s.pourManual && typeof s.pourManual==='object'){
+    Object.keys(s.pourManual).forEach(k=>{ state.pourManual[k] = s.pourManual[k]; });
+  }
   closeSaved();
   renderAll();
   showToast('Resep dimuat');
@@ -1173,7 +1349,16 @@ function deleteSaved(id){
 }
 
 /* ============ INIT ============ */
-setViewMode('detail');
+// First-time default: select "Dripnesia Recommended" as a real, actual recipe (state.style),
+// not a temporary display-only substitute — so Simple and Detail show the identical recipe
+// from the very first render, and switching modes never changes it.
+if(state.style===null && !state.lastPresetKey){
+  const defaultStyle = visibleStyles().find(s=>s.key==='recommended') || visibleStyles()[0];
+  if(defaultStyle) state.style = defaultStyle.key;
+}
+// Default website experience: Simple Mode, on the same real Dripnesia Recommended selection
+// set above — Simple is a visibility choice only, so the active recipe is identical either way.
+setViewMode('clean');
 </script>
 </body>
 </html>
