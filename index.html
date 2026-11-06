@@ -66,6 +66,18 @@
   .section-heading::after{ content:''; position:absolute; left:0; bottom:0; width:22px; height:2px; background:var(--purple); }
   .section-sub{ font-size:12px; color:var(--muted); margin:-4px 0 10px; line-height:1.5; }
 
+  /* Interactive controls are real <button> elements for keyboard/screen-reader access, but must
+     look exactly like the original clickable divs — this resets the browser's default button
+     chrome (border, background, font, alignment) so .tab/.seg-opt/.mt-opt/.chip styling below is
+     the only thing that shows, and adds a visible focus ring plus a ~44px minimum touch target. */
+  .tab, .seg-opt, .mt-opt, .chip{
+    font-family:inherit; appearance:none; -webkit-appearance:none; text-align:left; margin:0;
+    min-height:44px;
+  }
+  .tab:focus-visible, .seg-opt:focus-visible, .mt-opt:focus-visible, .chip:focus-visible, .psb-btn:focus-visible{
+    outline:2px solid var(--purple); outline-offset:2px;
+  }
+
   /* TABS */
   .tabs{ display:flex; gap:6px; flex-wrap:wrap; }
   .tab{
@@ -81,6 +93,7 @@
   .seg-opt{
     padding:9px 18px; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;
     background:var(--bg); display:flex; align-items:center; gap:6px; transition:all .12s ease;
+    border:none; justify-content:center;
   }
   .seg-opt + .seg-opt{ border-left:1px solid var(--border); }
   .seg-opt.active{ background:var(--purple); color:#fff; }
@@ -131,6 +144,10 @@
     font-size:12px; font-weight:700; border-radius:var(--radius); padding:7px 12px; cursor:pointer; white-space:nowrap;
   }
   .psb-btn:hover{ background:var(--lav-bg); }
+  /* Ice placement: two long labels must wrap inside the container instead of widening the page. */
+  #icePlacementSeg{ width:100%; max-width:100%; box-sizing:border-box; }
+  #icePlacementSeg .seg-opt{ flex:1 1 0; min-width:0; min-height:44px; white-space:normal; text-align:center; line-height:1.3; overflow-wrap:anywhere; }
+  #customNoticeList{ box-sizing:border-box; max-width:100%; overflow-wrap:anywhere; }
 
   /* ADVANCED */
   .adv-toggle{
@@ -218,7 +235,7 @@
   /* VIEW MODE TOGGLE: a clearly visible, easy-to-tap Simple/Detail switch — sits below the
      header intro and above brewer selection, not tucked away as a small corner control. */
   .mode-toggle{ display:flex; border:1.5px solid var(--soft-purple); border-radius:14px; overflow:hidden; background:var(--lav-bg); max-width:340px; margin-top:18px; }
-  .mode-toggle .mt-opt{ flex:1; min-height:44px; display:flex; align-items:center; justify-content:center; padding:10px 16px; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; background:#fff; transition:all .12s ease; }
+  .mode-toggle .mt-opt{ flex:1; min-height:44px; display:flex; align-items:center; justify-content:center; padding:10px 16px; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; background:#fff; transition:all .12s ease; border:0; border-radius:0; appearance:none; -webkit-appearance:none; text-align:center; }
   .mode-toggle .mt-opt + .mt-opt{ border-left:1.5px solid var(--soft-purple); }
   .mode-toggle .mt-opt.active{ background:var(--purple); color:#fff; }
   .view-toggle-hint{ display:none; font-size:12.5px; color:var(--muted); margin-top:8px; max-width:340px; line-height:1.5; }
@@ -237,7 +254,10 @@
   body.clean-mode #bloomBlock,
   body.clean-mode #tempBlock,
   body.clean-mode #pourPlanBlock,
-  body.clean-mode #styleBlock{ display:none !important; }
+  body.clean-mode #styleBlock,
+  body.clean-mode #categoryBlock,
+  body.clean-mode #customSeedBlock,
+  body.clean-mode #collectionBlock{ display:none !important; }
 
   /* SIMPLE MODE: Troubleshooting collapses to just the heading until tapped */
   .ts-chevron{ display:none; font-size:11px; transition:transform .15s ease; }
@@ -269,9 +289,9 @@
     <div class="h-sub">Atur resep dan langkah seduh sesuai alat, dosis kopi, dan gaya seduhmu.<br><span class="clean-hide">Nggak ada seduhan yang gagal — semua eksperimen itu langkah buat nemuin rasa favoritmu.</span></div>
     <button class="h-link" onclick="toggleHowto()">Cara menggunakan Brew Guide →</button>
     <div class="h-howto clean-hide" id="howtoBox">Pilih alat seduh, mode minuman, dosis, dan rasio di kolom kiri. Kalau bingung mau pakai rasio berapa, tinggal pilih salah satu gaya resep — semuanya diatur otomatis. Kartu resep di kanan selalu mengikuti perubahan yang kamu buat.</div>
-    <div class="mode-toggle" id="modeToggle">
-      <div class="mt-opt" data-mode="clean">Simple</div>
-      <div class="mt-opt" data-mode="detail">Detail</div>
+    <div class="mode-toggle" id="modeToggle" role="group" aria-label="Tampilan Simple atau Detail">
+      <button type="button" class="mt-opt" data-mode="clean" aria-pressed="false">Simple</button>
+      <button type="button" class="mt-opt" data-mode="detail" aria-pressed="false">Detail</button>
     </div>
     <div class="view-toggle-hint">Mau atur rasio, suhu, dan pouring sendiri? Coba Detail Mode.</div>
   </div>
@@ -295,11 +315,28 @@
         <div class="hint-box" id="icePlacementHint"></div>
       </div>
 
-      <div class="panel-block">
+      <div class="panel-block" id="categoryBlock">
+        <div class="section-heading">Pilih Resep</div>
+        <div class="section-sub">Tiga cara menyeduh — pilih salah satu, bebas pindah-pindah kapan saja tanpa kehilangan pengaturanmu di yang lain.</div>
+        <div class="tabs" id="categoryTabs"></div>
+      </div>
+
+      <div class="panel-block" id="customSeedBlock" style="display:none;">
+        <div class="hint-box" id="customNoticeList" style="display:none;"></div>
+      </div>
+
+      <div class="panel-block" id="doseBlock">
         <div class="section-heading">Dosis kopi</div>
         <div class="big-display"><span class="big-num" id="doseNum">15</span><span class="big-unit">gram</span></div>
         <input type="range" id="doseSlider" min="10" max="20" step="0.5" value="15">
         <div class="chip-row" id="doseChips" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="panel-block" id="collectionBlock" style="display:none;">
+        <div class="section-heading">Brewer's Collection</div>
+        <div class="section-sub">Resep yang dipublikasikan oleh brewer/roaster lain, cocok buat alat seduh yang sedang dipilih. Tetap bisa disesuaikan dosis, suhu, dan grind-nya lewat "Adaptasi Dripnesia".</div>
+        <div id="collectionList"></div>
+        <div id="collectionAdaptPanel"></div>
       </div>
 
       <div class="panel-block" id="ratioBlock">
@@ -345,8 +382,8 @@
 
       <div class="panel-block" id="styleBlock">
         <div class="section-heading">Gaya resep</div>
-        <div class="section-sub">Opsional — pilih satu untuk mengatur rasio, grind, suhu, dan jumlah tuangan sekaligus.</div>
-        <div class="preset-status-bar" id="presetStatusBar">
+        <div class="section-sub">Pilih salah satu gaya resep kurasi Dripnesia — rasio, grind, suhu, dan jumlah tuangan diatur otomatis. Mau atur semuanya sendiri? Pindah ke kategori <b>Custom — Brew Your Way</b> di atas.</div>
+        <div class="preset-status-bar" id="presetStatusBar" style="display:none;">
           <span class="psb-label"><span class="psb-dot"></span><span id="presetStatusLabel">Mode custom</span></span>
           <button class="psb-btn" id="presetStatusBtn">Ubah ke mode custom</button>
         </div>
@@ -436,10 +473,137 @@ const TROUBLESHOOT = [
   { q:'Terlalu lama menetes', a:'Giling lebih kasar atau kurangi agitasi saat menuang.' },
 ];
 
+/* ============ BREWER'S COLLECTION ============
+   Source-attributed techniques from published brewers, kept SEPARATE from Dripnesia's own
+   curated presets (STYLES above). Each entry was checked against its cited source (or, where
+   noted, cross-checked across independent published write-ups of that source) rather than
+   taken on faith — see `verifiedNote` for exactly what was and wasn't confirmed, and the Phase 2
+   test report for the full verification trail. A recipe with no entry here for a given brewer
+   means no collection recipe for that brewer could be sourced well enough to publish — this is
+   intentional (see Flat-Bottom: the "Patrik Rolf / April" candidate was withheld because no
+   reachable source attributed specific numbers to Patrik Rolf by name).
+
+   kind:'pourover' — a fixed, explicit sequence of {label, atSec, total} (cumulative grams,
+     bloom first), scaled on dose-adaptation with the same scalePourTargets() smart-rounding
+     used for Dripnesia's own presets (exact final total preserved, intermediates rounded to a
+     clean step). Timestamps are NEVER rescaled — they stay the technique's own reference timing.
+   kind:'action' — for techniques that aren't a generic bloom→pour→drawdown shape (immersion,
+     AeroPress with bypass water, etc). `steps` is an ordered list of {label, time, note, grams}
+     where grams (if present) scales proportionally on dose-adaptation and everything else
+     (label, time, note, sequence) stays fixed — the technique's structure is never altered by
+     adaptation, only its quantities.
+
+   `original.tempNumber` is null when the source gives no fixed number (e.g. "just off boil") —
+   Original mode then shows `original.tempText` verbatim instead of inventing a number; Custom
+   adaptation still lets the user pick an explicit number, clearly marked as their own addition. */
+const COLLECTION = [
+  {
+    id:'hoffmann-1cup', brewer:'cone', creator:'James Hoffmann', title:'A Better 1 Cup V60 Technique',
+    sourceLabel:'Video YouTube — James Hoffmann, "A Better 1 Cup V60 Technique"',
+    sourceUrl:'https://www.youtube.com/watch?v=1oB1oDrDkHM',
+    verifiedNote:'Nilai (dosis, air, waktu, target kumulatif) dicek ulang lewat rangkuman resep pihak ketiga (aeroprecipe.com) yang mempublikasikan ulang teknik ini, dan cocok persis dengan catatan yang sudah ada — video aslinya sendiri tidak ditonton ulang baris-per-baris dalam proses ini.',
+    kind:'pourover', allowDoseAdapt:true, allowTempAdapt:true, allowGrindAdapt:true,
+    original:{
+      dose:15, totalWater:250, ratio:16.7, tempNumber:100, tempText:null, grindText:'Medium-Fine',
+      totalTimeText:'~3:00 (target selesai menetes)',
+      steps:[
+        {label:'Bloom', atSec:0, total:50, pour:true},
+        {label:'Swirl', atSec:10, total:50, pour:false, note:'Putar dripper pelan sampai bubuk basah merata.'},
+        {label:'Tuangan 1', atSec:45, total:100, pour:true},
+        {label:'Tuangan 2', atSec:70, total:150, pour:true},
+        {label:'Tuangan 3', atSec:90, total:200, pour:true},
+        {label:'Tuangan 4', atSec:110, total:250, pour:true},
+        {label:'Swirl', atSec:120, total:250, pour:false, note:'Swirl pelan lagi, lalu biarkan menetes sampai habis.'}
+      ]
+    }
+  },
+  {
+    id:'hoffmann-ultimate-v60', brewer:'cone', creator:'James Hoffmann', title:'The Ultimate V60 Technique',
+    sourceLabel:'Hario USA — "James Hoffmann: Ultimate V60 Technique"',
+    sourceUrl:'https://www.hario-usa.com/blogs/recipes-and-more-from-friends/james-hoffmann-uitimate-v60-technique',
+    verifiedNote:'Dicek langsung dari halaman Hario USA yang menjadi sumber rujukan. Halaman aslinya tidak memberi angka suhu pasti ("the hotter, the better") — angka suhu TIDAK diciptakan di sini; mode Original menampilkan teks sumber apa adanya.',
+    kind:'pourover', allowDoseAdapt:true, allowTempAdapt:true, allowGrindAdapt:true,
+    original:{
+      dose:30, totalWater:500, ratio:16.7, tempNumber:null, tempText:'Air sangat panas — "semakin panas semakin baik", terutama untuk light roast. Sumber tidak memberi angka pasti.', grindText:'Medium-Fine',
+      totalTimeText:'~3:30 (target selesai menetes)',
+      steps:[
+        {label:'Bloom', atSec:0, total:60, pour:true, note:'Swirl langsung sampai merata, lalu biarkan bloom.'},
+        {label:'Tuangan 1', atSec:45, total:300, pour:true},
+        {label:'Tuangan 2', atSec:75, total:500, pour:true},
+        {label:'Stir', atSec:105, total:500, pour:false, note:'Aduk satu putaran searah jarum jam, satu putaran berlawanan arah.'}
+      ]
+    }
+  },
+  {
+    id:'kasuya-46', brewer:'cone', creator:'Tetsu Kasuya', title:'4:6 Method (varian dasar)',
+    sourceLabel:'Hario UK — Wawancara Hario Ambassador Tetsu Kasuya',
+    sourceUrl:'https://www.hario.co.uk/blogs/hario-ambassadors/hario-v60-recipe-interview-with-hario-ambassador-tetsu-kasuya',
+    verifiedNote:'Dicek langsung dari halaman Hario UK. Metode 4:6 punya banyak variasi (lebih manis/lebih asam dengan mengubah tuangan pertama) — ini secara spesifik varian dasar yang dipublikasikan di wawancara tersebut (20g/300g, 5 tuangan 50/70/60/60/60), bukan diklaim sebagai satu-satunya versi resmi.',
+    kind:'pourover', allowDoseAdapt:true, allowTempAdapt:true, allowGrindAdapt:true,
+    original:{
+      dose:20, totalWater:300, ratio:15, tempNumber:92, tempText:null, grindText:'Coarse',
+      totalTimeText:'~3:30 (angkat dripper di sekitar waktu ini)',
+      steps:[
+        {label:'Tuangan 1', atSec:0, total:50, pour:true},
+        {label:'Tuangan 2', atSec:45, total:120, pour:true},
+        {label:'Tuangan 3', atSec:90, total:180, pour:true},
+        {label:'Tuangan 4', atSec:130, total:240, pour:true},
+        {label:'Tuangan 5', atSec:160, total:300, pour:true}
+      ]
+    }
+  },
+  {
+    id:'hoffmann-frenchpress', brewer:'frenchpress', creator:'James Hoffmann', title:'French Press Technique',
+    sourceLabel:'Video YouTube — James Hoffmann (teknik French Press)',
+    sourceUrl:'https://www.youtube.com/watch?v=st571DYYTR8',
+    verifiedNote:'Video aslinya tidak ditonton ulang baris-per-baris; struktur teknik (steep 4 menit tanpa diganggu → pecah crust → buang buih/ampas atas → biarkan mengendap → plunger hanya jadi "penutup", bukan ditekan menembus ampas) dicek silang lewat dua rangkuman independen (lamose.com dan honestcoffeeguide.com) yang sepakat pada strukturnya. Kedua sumber itu sedikit berbeda soal suhu persis (96°C vs 100°C) dan estimasi total waktu (9:30 vs 9–12 menit) — karena tidak sepakat, suhu TIDAK ditampilkan sebagai satu angka pasti di mode Original.',
+    kind:'action', allowDoseAdapt:true, allowTempAdapt:true, allowGrindAdapt:true,
+    original:{
+      dose:30, totalWater:500, ratio:16.7, tempNumber:null, tempText:'Mendekati titik didih (sumber tidak sepakat persis — sekitar 96–100°C).', grindText:'Medium-Coarse',
+      totalTimeText:'~9–12 menit total',
+      steps:[
+        {label:'Tuang Air', time:'00:00', grams:500, note:'Tuang semua air sekaligus ke atas bubuk, basahi merata, ±10 detik.'},
+        {label:'Steep', time:'00:00–04:00', note:'Diamkan 4 menit penuh. Jangan diaduk atau ditekan dulu.'},
+        {label:'Pecah Crust', time:'04:00', note:'Aduk lapisan atas (crust) 2–3 kali dengan sendok.'},
+        {label:'Buang Buih & Ampas', time:'04:00', note:'Pakai dua sendok untuk menyendok buih dan ampas yang mengapung, lalu buang.'},
+        {label:'Biarkan Mengendap', time:'04:00–±09:00', note:'Tunggu sekitar 5–8 menit lagi supaya ampas turun ke dasar.'},
+        {label:'Pasang Plunger', time:'±09:00–12:00', note:'Letakkan plunger hanya sedikit di bawah permukaan — jadi "penutup", bukan ditekan menembus ampas.'}
+      ]
+    }
+  },
+  {
+    id:'wac2019-vanbunnik', brewer:'aeropress', creator:'Wendelien Van Bunnik', title:'World AeroPress Championship 2019 — Juara 1',
+    sourceLabel:'Arsip resep World AeroPress Championship (dipublikasikan ulang di aeroprecipe.com)',
+    sourceUrl:'https://worldaeropresschampionship.com/pages/recipes',
+    verifiedNote:'Dicek lewat rangkuman resep di aeroprecipe.com yang mengutip arsip World AeroPress Championship. Kompetitor, tahun, dan peringkat (Wendelien Van Bunnik, Belanda, Juara 1 2019) dipilih secara spesifik — bukan "resep juara dunia" generik. Memakai bypass water (air tambahan setelah ditekan) dan metode inverted; keduanya ditampilkan secara eksplisit, bukan dipaksakan ke struktur AeroPress Dripnesia yang biasa.',
+    kind:'action', allowDoseAdapt:true, allowTempAdapt:true, allowGrindAdapt:true,
+    original:{
+      // brewWater is the water that actually passes through the coffee bed; bypassGrams is added
+      // AFTER pressing purely to dilute, never touching the grounds. totalWater is their sum,
+      // kept here as an explicit, independently-stated field (not something the UI infers by
+      // summing steps) so summary, ratio and adaptation math all read from the same numbers.
+      dose:30, brewWater:100, bypassGrams:120, totalWater:220, ratio:7.3, tempNumber:92, tempText:null, grindText:'Coarse',
+      totalTimeText:'~1:15 sebelum bypass & pendinginan',
+      steps:[
+        {label:'Pasang Inverted', time:'—', note:'Pasang AeroPress dalam posisi terbalik (inverted), belum pakai filter.'},
+        {label:'Tuang Air Seduh', time:'00:00', grams:100, waterType:'brew', note:'Tuang 100 g air 92°C ke atas bubuk kopi, mulai timer.'},
+        {label:'Aduk', time:'00:00', note:'Aduk kuat sekitar 20 kali.'},
+        {label:'Pasang Filter & Tutup', time:'—', note:'Basahi filter kertas, pasang tutup, dorong keluar udara berlebih.'},
+        {label:'Balik & Tekan', time:'00:40', note:'Balik ke atas cup/pitcher, lalu tekan secepatnya.'},
+        {label:'Tambah Bypass', time:'setelah tekan', grams:120, waterType:'bypass', note:'Tambahkan 120 g air bypass 92°C untuk mengencerkan setelah ditekan — air ini TIDAK melewati bubuk kopi, cuma mengencerkan hasil seduhan.'},
+        {label:'Dinginkan', time:'—', note:'Tuang bolak-balik antar dua pitcher sampai suhu turun ke sekitar 60°C sebelum disajikan.'}
+      ]
+    }
+  }
+];
+function getCollectionFor(brewerKey){ return COLLECTION.filter(c=>c.brewer===brewerKey); }
+function findCollectionRecipe(id){ return COLLECTION.find(c=>c.id===id) || null; }
+
 /* ============ STATE ============ */
 let state = {
   brewer: 'cone',
   drink: 'hot',
+  category: 'recommended', // which of the THREE recipe approaches is active: 'recommended'|'custom'|'collection'
   style: null,        // null = custom mode; otherwise a locked preset key
   lastPresetKey: null, // remembers which preset to return to via "Kembali ke preset"
   manualRatio: {},    // per-brewer manual ratio memory, e.g { cone: 15.5 }
@@ -447,9 +611,25 @@ let state = {
   tempManual: {},     // per-brewer manual temperature °C, e.g { cone: 91 }
   tempRef: {},         // per-brewer chosen temperature reference key: 'sca'|'hario'|'dripnesia'|'custom'
   dose: 15,
+  // Custom owns its own per-brewer dose + a per-brewer "already initialised" flag. Custom is
+  // seeded from another recipe only on its first visit (or an explicit copy), never again on
+  // category navigation, so edits made in Custom survive visits to Recommended/Collection.
+  customDose: {},
+  customSeeded: {},
+  customNotice: [],             // human-readable notes about values adjusted when copying into Custom
   pourCount: null,
   pourManual: {},     // manual grams for pour index 0..N-2, e.g { 0: 80 }
   icePlacement: 'start', // 'start' = ice in server first (recommended), 'end' = pour over ice after brewing
+  // Brewer's Collection — a fourth, independent "slot" alongside style/custom. `category` just
+  // picks which slot is ACTIVE for display/calculation; switching category, like switching view
+  // mode, never clears another slot's own remembered state.
+  collection: {
+    id: null,        // active Brewer's Collection recipe id, or null if none chosen yet
+    adapted: false,  // false = "Resep Original", true = "Adaptasi Dripnesia"
+    dose: null,      // user-adapted dose (null = use the recipe's own original dose)
+    temp: null,      // user-adapted temperature number (null = use the recipe's original temp/tempText)
+    grind: null,     // user-adapted grind string from GRIND_STEPS (null = use the recipe's original grind)
+  },
 };
 
 /* ============ VIEW MODE (Clean / Detail) ============ */
@@ -460,7 +640,9 @@ function setViewMode(mode){
   viewMode = mode;
   document.body.classList.toggle('clean-mode', mode==='clean');
   document.querySelectorAll('#modeToggle .mt-opt').forEach(el=>{
-    el.classList.toggle('active', el.dataset.mode===mode);
+    const active = el.dataset.mode===mode;
+    el.classList.toggle('active', active);
+    el.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
   renderAll();
 }
@@ -474,7 +656,19 @@ function findStyle(key){ return key ? currentStyles().find(s=>s.key===key) : nul
 function visibleStyles(){
   return currentStyles().filter(s => state.drink==='iced' ? s.iced : !s.iced);
 }
-function isLocked(){ return !!state.style; }
+// Locked = the Recommended category is active AND a real preset is selected there. state.style
+// itself persists across category switches as inert memory (see buildRecipe) — it must never by
+// itself lock Custom's sliders just because a preset happens to still be remembered.
+function isLocked(){ return state.category==='recommended' && !!state.style; }
+// Picks a real, valid "Dripnesia Recommended" (or first available) style key for a given
+// brewer under the current drink mode — used whenever the 'recommended' category needs a
+// guaranteed-valid active preset (first load, brewer switch, reset) instead of ever leaving it
+// null, which would otherwise require a display-only substitute.
+function defaultStyleKeyFor(brewerKey){
+  const vis = STYLES[brewerKey].filter(s => state.drink==='iced' ? s.iced : !s.iced);
+  const def = vis.find(s=>s.key==='recommended') || vis[0];
+  return def ? def.key : null;
+}
 function defaultManualRatio(brewerKey){
   const [lo,hi] = BREWERS[brewerKey].ratioBounds;
   return +(((lo+hi)/2).toFixed(1));
@@ -509,17 +703,27 @@ function tagFromRatio(brewer, ratio){
 /* ============ RENDER: BREWER TABS ============ */
 function renderBrewerTabs(){
   const el = document.getElementById('brewerTabs');
+  el.setAttribute('role','group');
+  el.setAttribute('aria-label','Alat seduh');
   el.innerHTML='';
   Object.values(BREWERS).forEach(b=>{
-    const d = document.createElement('div');
+    const d = document.createElement('button');
+    d.type = 'button';
     d.className = 'tab' + (state.brewer===b.key?' active':'');
+    d.setAttribute('aria-pressed', state.brewer===b.key ? 'true' : 'false');
     d.textContent = b.name;
     d.onclick = ()=>{
       state.brewer = b.key;
-      state.style = null;
+      state.style = state.category==='recommended' ? defaultStyleKeyFor(b.key) : null;
       state.lastPresetKey = null;
       state.pourCount = null;
       state.pourManual = {};
+      // A Brewer's Collection recipe is device-specific — changing devices must never leave an
+      // incompatible one still "active" in the background.
+      const activeCr = state.collection.id ? findCollectionRecipe(state.collection.id) : null;
+      if(activeCr && activeCr.brewer !== b.key){
+        state.collection = { id:null, adapted:false, dose:null, temp:null, grind:null };
+      }
       renderAll();
     };
     el.appendChild(d);
@@ -528,37 +732,369 @@ function renderBrewerTabs(){
 
 function renderDrinkSeg(){
   const el = document.getElementById('drinkSeg');
+  el.setAttribute('role','group');
+  el.setAttribute('aria-label','Mode minuman');
   el.innerHTML='';
   const dropSvg = `<svg class="drop-icon" viewBox="0 0 10 12"><path d="M5 0 C5 0 9 6 9 8.5 A4 4 0 0 1 1 8.5 C1 6 5 0 5 0Z" fill="currentColor"/></svg>`;
   [['hot','Hot',''],['iced','Iced',dropSvg]].forEach(([key,label,icon])=>{
-    const d = document.createElement('div');
+    const d = document.createElement('button');
+    d.type = 'button';
     d.className='seg-opt' + (state.drink===key?' active':'');
+    d.setAttribute('aria-pressed', state.drink===key ? 'true' : 'false');
     d.innerHTML = icon + label;
     d.onclick = ()=>{
+      const wasCollection = state.category==='collection';
       state.drink = key;
       const styles = visibleStyles();
       if(state.style && !styles.find(s=>s.key===state.style)) state.style = null;
+      if(state.category==='recommended' && !state.style) state.style = defaultStyleKeyFor(state.brewer);
       state.lastPresetKey = null;
       state.pourCount = null;
       state.pourManual = {};
+      // Brewer's Collection is Hot-only. Switching to Iced while a collection recipe is active
+      // must never display it as if it were an Iced recipe — move to Recommended's own Iced
+      // preset instead. The collection selection and its adaptation stay exactly as they were
+      // in state.collection (nothing here clears them), so switching back to Hot and tapping
+      // Brewer's Collection again picks up right where the user left off.
+      if(key==='iced' && wasCollection){
+        state.category = 'recommended';
+        state.style = defaultStyleKeyFor(state.brewer);
+        showToast("Brewer's Collection tersedia untuk mode Hot.");
+      }
+      // Switching back to Hot never auto-reactivates Collection on its own — the category tab
+      // simply becomes available again, and the user stays in whatever category they're in.
       renderAll();
     };
     el.appendChild(d);
   });
 }
 
+/* ============ RENDER: PILIH RESEP (category) + BREWER'S COLLECTION ============
+   `category` is a pure VIEW selector over three independent, persistent "slots" — switching it
+   never clears another slot's own state (style/custom controls keep their values; a selected
+   collection recipe and its adaptation stay exactly as left, per-brewer). */
+const CATEGORY_LABELS = { recommended:'Dripnesia Recommended', custom:'Custom — Brew Your Way', collection:"Brewer's Collection" };
+// Every published Brewer's Collection recipe in this dataset is a Hot technique — none has a
+// verified Iced variant, and generating one would be fabricating a recipe. So the category
+// itself is Hot-only: it's not shown at all while Iced is active (never shown disabled/greyed —
+// fully absent), the same way an incompatible option disappears rather than lingering unusable.
+function availableCategories(){
+  return state.drink==='iced' ? ['recommended','custom'] : ['recommended','custom','collection'];
+}
+function renderCategoryTabs(){
+  const el = document.getElementById('categoryTabs');
+  el.setAttribute('role','group');
+  el.setAttribute('aria-label','Pilih Resep');
+  el.innerHTML = '';
+  availableCategories().forEach(cat=>{
+    const d = document.createElement('button');
+    d.type = 'button';
+    d.className = 'tab' + (state.category===cat ? ' active' : '');
+    d.setAttribute('aria-pressed', state.category===cat ? 'true' : 'false');
+    d.textContent = CATEGORY_LABELS[cat];
+    d.onclick = ()=>{
+      const prevCat = state.category;
+      if(cat===prevCat) return;
+      state.category = cat;
+      state.customNotice = []; // notes only describe the copy that just happened
+      if(cat==='recommended' && !state.style) state.style = defaultStyleKeyFor(state.brewer);
+      // Custom is initialised from the recipe the user was just looking at ONLY the first time
+      // (per brewer). Afterwards it is left exactly as the user last edited it.
+      if(cat==='custom' && !state.customSeeded[state.brewer]) seedCustom(prevCat);
+      renderAll();
+    };
+    el.appendChild(d);
+  });
+}
+// Moving INTO Custom from Recommended or Brewer's Collection must never silently discard the
+// values the user was just looking at. From a Dripnesia preset, every manual control (ratio,
+// bloom, temp, pour allocation) carries over exactly — same model, same shape. A Brewer's
+// Collection recipe uses a fundamentally different structure (fixed published steps, not a
+// free pour-count/allocation the user chose), so forcing its exact step timings into Custom's
+// pour-count model would misrepresent it as something the user picked — instead, only the
+// values that transfer honestly (dose, ratio derived from its own total water, and a concrete
+// temperature when the source gave one) are carried over; bloom/pour count fall back to Custom's
+// own sensible defaults for the brewer, same as a fresh Custom start.
+// Custom's dose slider covers every dose a collection recipe (or its adaptation range, up to
+// 1.6x of a 30 g original) can use, so a copied dose is never hidden behind a narrower slider.
+const CUSTOM_DOSE_RANGE = [5, 50];
+const RECOMMENDED_DOSE_RANGE = [10, 20];
+function snapHalf(v){ return Math.round(v*2)/2; } // sliders move in 0.5 steps
+function buildRecipeFor(cat){
+  const prev = state.category;
+  state.category = cat;
+  try{
+    if(cat==='recommended' && !state.style) state.style = defaultStyleKeyFor(state.brewer);
+    return buildRecipe();
+  } finally { state.category = prev; }
+}
+// Copies a recipe's values into Custom for the current brewer. Anything that can't be carried
+// over exactly is normalised to something the sliders can actually show, and each adjustment
+// is returned as a note — the displayed value always equals the value used for calculation.
+function seedCustomFromRecipe(r){
+  const key = state.brewer, b = BREWERS[key], notes = [];
+  const isColl = r.category==='collection';
+  const label = isColl ? `resep Brewer's Collection (${r.name})` : `preset Dripnesia (${r.name})`;
+
+  // Dose
+  let dose = snapHalf(r.dose);
+  const [dLo, dHi] = CUSTOM_DOSE_RANGE;
+  if(dose < dLo || dose > dHi){
+    const c = Math.max(dLo, Math.min(dHi, dose));
+    notes.push(`Dosis ${r.dose} g di luar rentang slider Custom (${dLo}–${dHi} g), jadi disesuaikan menjadi ${c} g.`);
+    dose = c;
+  } else if(r.dose > RECOMMENDED_DOSE_RANGE[1] || r.dose < RECOMMENDED_DOSE_RANGE[0]){
+    notes.push(`Dosis ${r.dose} g di luar rentang standar ${RECOMMENDED_DOSE_RANGE[0]}–${RECOMMENDED_DOSE_RANGE[1]} g, jadi slider dosis Custom diperluas (${dLo}–${dHi} g) supaya angkanya tetap sama.`);
+  }
+  state.customDose[key] = dose;
+
+  // Ratio
+  const hasBypass = isColl && r.bypassWater>0;
+  if(hasBypass){
+    delete state.manualRatio[key];
+    notes.push(`Resep ini memakai air bypass (${r.brewWater} g air seduh + ${r.bypassWater} g bypass = ${r.totalWater} g, rasio total 1:${r.totalRatio}). Custom tidak punya air bypass, jadi rasio tidak disalin — Custom memakai rasio standarnya (1:${defaultManualRatio(key)}), dan seluruh air melewati kopi.`);
+  } else {
+    const [rLo, rHi] = b.ratioBounds;
+    let ratio = snapHalf(r.ratio);
+    const clamped = Math.max(rLo, Math.min(rHi, ratio));
+    if(clamped !== r.ratio){
+      const newTotal = Math.round(dose*clamped);
+      const why = clamped!==ratio ? `di luar rentang slider (1:${rLo}–1:${rHi})` : 'slider rasio bergerak per 0.5';
+      notes.push(`Rasio asli 1:${r.ratio} disesuaikan menjadi 1:${clamped} (${why}). Total air Custom jadi ${newTotal} g${r.totalWater!=null?` (asli: ${r.totalWater} g)`:''}.`);
+    }
+    state.manualRatio[key] = clamped;
+  }
+
+  // Temperature
+  if(r.temp!=null){
+    const cur = getTempRef(key);
+    const [tLo, tHi] = TEMP_REFS[cur].range;
+    if(r.temp < tLo || r.temp > tHi){
+      state.tempRef[key] = 'custom';
+      notes.push(`Suhu ${r.temp}°C di luar rentang SCA Reference, jadi referensi suhu dialihkan ke Custom (${TEMP_REFS.custom.range[0]}–${TEMP_REFS.custom.range[1]}°C).`);
+    }
+    const [cLo, cHi] = TEMP_REFS[getTempRef(key)].range;
+    state.tempManual[key] = Math.max(cLo, Math.min(cHi, r.temp));
+  } else {
+    delete state.tempManual[key];
+    if(isColl) notes.push('Sumber resep tidak memberi angka suhu pasti, jadi suhu Custom memakai nilai tengah referensi yang dipilih.');
+  }
+
+  // Bloom + pour allocation
+  if(!isColl){
+    state.bloomManual[key] = r.bloomWater;
+    if(r.pourPlan){
+      state.pourCount = r.pourPlan.length;
+      state.pourManual = {};
+      for(let i=0;i<r.pourPlan.length-1;i++) state.pourManual[i] = r.pourPlan[i];
+    }
+  } else {
+    delete state.bloomManual[key];
+    state.pourCount = null; state.pourManual = {};
+    notes.push('Grind, bloom, dan pola tuangan tidak disalin — urutan teknik resep itu tetap, sedangkan Custom menghitungnya sendiri dari dosis dan rasio.');
+  }
+  state.customSeeded[key] = true;
+  state.customNotice = notes;
+}
+// First visit to Custom (per brewer). Seeds once from the recipe the user came from; if there
+// is nothing concrete to copy (e.g. an empty Collection), falls back to the Recommended preset.
+function seedCustom(prevCat){
+  let src = prevCat==='collection' ? 'collection' : 'recommended';
+  let r = buildRecipeFor(src);
+  if(r.isEmpty){ src = 'recommended'; r = buildRecipeFor('recommended'); }
+  if(r.isEmpty) { state.customSeeded[state.brewer] = true; return; }
+  seedCustomFromRecipe(r);
+}
+// Shows the one-time notes about values adjusted when Custom was first filled in. The panel only
+// exists while there are notes, so no empty block is ever left in the layout.
+function renderCustomSeedBlock(){
+  const block = document.getElementById('customSeedBlock');
+  const notes = state.category==='custom' ? (state.customNotice || []) : [];
+  const notesEl = document.getElementById('customNoticeList');
+  notesEl.innerHTML = '';
+  block.style.display = notes.length ? '' : 'none';
+  notesEl.style.display = notes.length ? '' : 'none';
+  if(!notes.length) return;
+  const head = document.createElement('div');
+  head.innerHTML = '<b>Custom diisi dari resep sebelumnya — ada penyesuaian:</b>';
+  notesEl.appendChild(head);
+  const ul = document.createElement('ul');
+  ul.style.margin = '6px 0 0'; ul.style.paddingLeft = '18px';
+  notes.forEach(n=>{ const li = document.createElement('li'); li.textContent = n; ul.appendChild(li); });
+  notesEl.appendChild(ul);
+}
+// state.style is deliberately left untouched by all of the above — it's the Recommended
+// category's own persistent memory slot (see buildRecipe).
+function setBlockVisible(id, visible){ document.getElementById(id).style.display = visible ? '' : 'none'; }
+function renderCategoryVisibility(){
+  const cat = state.category;
+  setBlockVisible('doseBlock', cat!=='collection');
+  setBlockVisible('ratioBlock', cat==='custom');
+  setBlockVisible('bloomBlock', cat==='custom');
+  setBlockVisible('tempBlock', cat==='custom');
+  setBlockVisible('pourPlanBlock', cat==='custom');
+  setBlockVisible('styleBlock', cat==='recommended');
+  setBlockVisible('collectionBlock', cat==='collection');
+}
+function renderCollectionBlock(){
+  if(state.category!=='collection') return;
+  const listEl = document.getElementById('collectionList');
+  const adaptEl = document.getElementById('collectionAdaptPanel');
+  const items = getCollectionFor(state.brewer);
+  listEl.innerHTML = '';
+  if(items.length===0){
+    listEl.innerHTML = '<div class="hint-box">Belum ada resep Brewer\'s Collection yang bisa diverifikasi sumbernya untuk alat seduh ini. Coba alat seduh lain, atau pakai Custom — Brew Your Way untuk atur resepmu sendiri.</div>';
+    adaptEl.innerHTML = '';
+    return;
+  }
+  listEl.setAttribute('role','group');
+  listEl.setAttribute('aria-label',"Resep Brewer's Collection");
+  items.forEach(cr=>{
+    const d = document.createElement('button');
+    d.type = 'button';
+    d.className = 'tab' + (state.collection.id===cr.id ? ' active' : '');
+    d.setAttribute('aria-pressed', state.collection.id===cr.id ? 'true' : 'false');
+    d.innerHTML = `<b>${cr.title}</b><br><span style="font-size:11.5px;opacity:.75;">oleh ${cr.creator}</span>`;
+    d.style.height='auto'; d.style.padding='10px 14px'; d.style.textAlign='left'; d.style.lineHeight='1.3'; d.style.display='block'; d.style.width='100%';
+    d.onclick = ()=>{
+      if(state.collection.id !== cr.id){
+        // Selecting a different collection recipe never inherits a previously-adapted dose —
+        // it starts at that recipe's own verified Original state.
+        state.collection = { id:cr.id, adapted:false, dose:null, temp:null, grind:null };
+      }
+      renderAll();
+    };
+    listEl.appendChild(d);
+  });
+  const active = state.collection.id ? findCollectionRecipe(state.collection.id) : null;
+  if(!active || active.brewer !== state.brewer){ adaptEl.innerHTML=''; return; }
+  const o = active.original;
+  const adapted = !!state.collection.adapted;
+  adaptEl.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.marginTop = '14px';
+
+  const srcBox = document.createElement('div');
+  srcBox.className = 'hint-box';
+  srcBox.innerHTML = `Resep berdasarkan metode yang dipublikasikan oleh <b>${active.creator}</b> — <a href="${active.sourceUrl}" target="_blank" rel="noopener" style="color:var(--purple);">${active.sourceLabel}</a>.<br><span style="opacity:.75;">${active.verifiedNote}</span>`;
+  wrap.appendChild(srcBox);
+
+  const seg = document.createElement('div');
+  seg.className = 'segmented';
+  seg.style.marginTop = '10px';
+  seg.setAttribute('role','group');
+  seg.setAttribute('aria-label','Resep Original atau Adaptasi Dripnesia');
+  [['original','Resep Original'],['adapt','Sesuaikan']].forEach(([key,label])=>{
+    const opt = document.createElement('button');
+    opt.type = 'button';
+    const isActive = adapted ? key==='adapt' : key==='original';
+    opt.className = 'seg-opt' + (isActive ? ' active' : '');
+    opt.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    opt.textContent = label;
+    opt.onclick = ()=>{
+      if(key==='original'){
+        state.collection.adapted = false;
+        state.collection.dose = null; state.collection.temp = null; state.collection.grind = null;
+      } else {
+        state.collection.adapted = true;
+      }
+      renderAll();
+    };
+    seg.appendChild(opt);
+  });
+  wrap.appendChild(seg);
+
+  if(adapted){
+    const adjBox = document.createElement('div');
+    adjBox.style.marginTop = '12px';
+    // Dose adaptation
+    if(active.allowDoseAdapt){
+      const doseRow = document.createElement('div');
+      doseRow.className = 'panel-block';
+      doseRow.style.padding='10px 0';
+      const curDose = state.collection.dose!=null ? state.collection.dose : o.dose;
+      doseRow.innerHTML = `<div class="section-heading">Dosis kopi (disesuaikan)</div><div class="big-display"><span class="big-num">${curDose}</span><span class="big-unit">gram</span></div>`;
+      const slider = document.createElement('input');
+      slider.type='range'; slider.min=Math.max(5, Math.round(o.dose*0.5)); slider.max=Math.round(o.dose*1.6); slider.step=0.5; slider.value=curDose;
+      slider.addEventListener('input', e=>{ state.collection.dose = parseFloat(e.target.value); renderAll(); });
+      doseRow.appendChild(slider);
+      const note = document.createElement('div');
+      note.className='hint-box';
+      note.textContent = `Rasio asli (1:${o.ratio}), urutan, dan teknik tetap dipertahankan — cuma jumlah air per langkah yang ikut menyesuaikan dosis. Mengubah dosis bisa mengubah lama ekstraksi/drawdown dari waktu referensi aslinya.`;
+      doseRow.appendChild(note);
+      adjBox.appendChild(doseRow);
+    }
+    // Temperature adaptation
+    if(active.allowTempAdapt){
+      const tempRow = document.createElement('div');
+      tempRow.className = 'panel-block';
+      tempRow.style.padding='10px 0';
+      const baseTemp = o.tempNumber!=null ? o.tempNumber : 92;
+      const curTemp = state.collection.temp!=null ? state.collection.temp : baseTemp;
+      tempRow.innerHTML = `<div class="section-heading">Suhu air (disesuaikan)</div><div class="big-display"><span class="big-num">${curTemp}</span><span class="big-unit">°C</span></div>`;
+      const slider = document.createElement('input');
+      slider.type='range'; slider.min=75; slider.max=100; slider.step=1; slider.value=curTemp;
+      slider.addEventListener('input', e=>{ state.collection.temp = parseFloat(e.target.value); renderAll(); });
+      tempRow.appendChild(slider);
+      const note = document.createElement('div');
+      note.className='hint-box';
+      note.textContent = o.tempNumber==null
+        ? `Sumber aslinya tidak memberi angka suhu pasti ("${o.tempText||''}"). Angka di atas adalah penyesuaianmu sendiri, bukan instruksi asli dari pembuat resep.`
+        : `Suhu asli dari sumber adalah ${o.tempNumber}°C. Angka di atas adalah penyesuaianmu sendiri.`;
+      tempRow.appendChild(note);
+      adjBox.appendChild(tempRow);
+    }
+    // Grind adaptation — reuses the app's existing grind steps; does not touch dose/water/timeline.
+    if(active.allowGrindAdapt){
+      const grindRow = document.createElement('div');
+      grindRow.className = 'panel-block';
+      grindRow.style.padding='10px 0';
+      grindRow.innerHTML = `<div class="section-heading">Grind (disesuaikan)</div>`;
+      const chipRow = document.createElement('div');
+      chipRow.className = 'chip-row';
+      const curGrind = state.collection.grind!=null ? state.collection.grind : o.grindText;
+      GRIND_STEPS.forEach(g=>{
+        const chip = document.createElement('div');
+        chip.className = 'chip' + (curGrind===g ? ' active' : '');
+        chip.textContent = g;
+        chip.onclick = ()=>{ state.collection.grind = g; renderAll(); };
+        chipRow.appendChild(chip);
+      });
+      grindRow.appendChild(chipRow);
+      adjBox.appendChild(grindRow);
+    }
+    wrap.appendChild(adjBox);
+  }
+
+  const backBtn = document.createElement('button');
+  backBtn.className = 'psb-btn';
+  backBtn.style.marginTop='10px';
+  backBtn.textContent = 'Kembali ke Original';
+  backBtn.onclick = ()=>{
+    state.collection.adapted = false;
+    state.collection.dose = null; state.collection.temp = null; state.collection.grind = null;
+    renderAll();
+  };
+  wrap.appendChild(backBtn);
+
+  adaptEl.appendChild(wrap);
+}
+
 function renderStyleTabs(){
   const el = document.getElementById('styleTabs');
+  el.setAttribute('role','group');
+  el.setAttribute('aria-label','Gaya resep');
   el.innerHTML='';
   visibleStyles().forEach(s=>{
-    const d = document.createElement('div');
+    const d = document.createElement('button');
+    d.type = 'button';
     d.className='tab' + (state.style===s.key?' active':'');
+    d.setAttribute('aria-pressed', state.style===s.key ? 'true' : 'false');
     d.textContent = s.name;
     d.onclick = ()=>{
       state.style = s.key;
       state.lastPresetKey = null; // fresh pick, not a "return to preset"
-      state.pourCount = null;
-      state.pourManual = {};
+      // (Pour allocations belong to Custom — picking a Recommended preset must not wipe them.)
       renderAll();
     };
     el.appendChild(d);
@@ -569,7 +1105,7 @@ function renderPresetStatus(r){
   const label = document.getElementById('presetStatusLabel');
   const btn = document.getElementById('presetStatusBtn');
 
-  if(state.style){
+  if(isLocked()){
     label.textContent = 'Preset Dripnesia aktif';
     btn.textContent = 'Ubah ke mode custom';
     btn.style.display = '';
@@ -595,7 +1131,7 @@ function renderPresetStatus(r){
 
 function unlockToCustom(){
   const r = lastRecipe;
-  if(!r || !state.style) return;
+  if(!r || !isLocked()) return;
   state.manualRatio[state.brewer] = r.ratio;
   state.bloomManual[state.brewer] = r.bloomWater;
   state.tempManual[state.brewer] = r.temp;
@@ -640,21 +1176,34 @@ function renderIcePlacement(){
 }
 
 
+// Recommended and Custom keep separate doses so editing one never changes the other.
+function activeDose(){
+  if(state.category==='custom' && state.customDose[state.brewer]!==undefined) return state.customDose[state.brewer];
+  return state.dose;
+}
+function setActiveDose(v){
+  if(state.category==='custom') state.customDose[state.brewer] = v;
+  else state.dose = v;
+}
 function renderDoseControls(){
-  document.getElementById('doseNum').textContent = state.dose;
-  document.getElementById('doseSlider').value = state.dose;
+  const dose = activeDose();
+  const [lo, hi] = state.category==='custom' ? CUSTOM_DOSE_RANGE : RECOMMENDED_DOSE_RANGE;
+  const slider = document.getElementById('doseSlider');
+  slider.min = lo; slider.max = hi;
+  document.getElementById('doseNum').textContent = dose;
+  slider.value = dose;
   const chipsEl = document.getElementById('doseChips');
   chipsEl.innerHTML='';
   [10,12,15].forEach(g=>{
     const c = document.createElement('div');
-    c.className = 'chip' + (state.dose===g?' active':'');
+    c.className = 'chip' + (dose===g?' active':'');
     c.textContent = g+' g';
-    c.onclick = ()=>{ state.dose=g; renderAll(); };
+    c.onclick = ()=>{ setActiveDose(g); renderAll(); };
     chipsEl.appendChild(c);
   });
 }
 document.getElementById('doseSlider').addEventListener('input', e=>{
-  state.dose = parseFloat(e.target.value);
+  setActiveDose(parseFloat(e.target.value));
   renderAll();
 });
 
@@ -665,7 +1214,17 @@ function renderRatioControls(){
   const slider = document.getElementById('ratioSlider');
   slider.min = lo; slider.max = hi; slider.step = 0.5;
 
-  const activeRatio = state.style ? findStyle(state.style).ratio : getManualRatio();
+  // isLocked() — not a raw state.style check — is the single source of truth for "a Recommended
+  // preset is actually governing these controls right now". state.style can be non-null while
+  // category isn't 'recommended' (it's a persistent memory slot, see buildRecipe), and must never
+  // be read directly here as if its mere presence meant a preset was active.
+  const locked = isLocked();
+  // Defensive: fall back to the manual ratio if `locked` is somehow true but the remembered
+  // style key doesn't actually resolve for the current brewer (should never happen through
+  // normal navigation — brewer/category switches always revalidate state.style — but a stale
+  // reference must never crash the recipe sheet).
+  const presetObj = locked ? findStyle(state.style) : null;
+  const activeRatio = presetObj ? presetObj.ratio : getManualRatio();
   slider.value = activeRatio;
   document.getElementById('ratioNum').textContent = activeRatio;
 
@@ -678,13 +1237,13 @@ function renderRatioControls(){
   ];
   presets.forEach(p=>{
     const c = document.createElement('div');
-    c.className = 'chip text' + (!state.style && getManualRatio()===p.val ? ' active':'');
+    c.className = 'chip text' + (!locked && getManualRatio()===p.val ? ' active':'');
     c.textContent = p.label;
     c.onclick = ()=>{ state.manualRatio[state.brewer]=p.val; renderAll(); };
     chipsEl.appendChild(c);
   });
 
-  document.getElementById('ratioHint').style.display = state.style ? 'none' : 'block';
+  document.getElementById('ratioHint').style.display = locked ? 'none' : 'block';
 }
 document.getElementById('ratioSlider').addEventListener('input', e=>{
   state.manualRatio[state.brewer] = parseFloat(e.target.value);
@@ -789,14 +1348,33 @@ function computePourPlan(pourCount, remaining){
 
 /* ============ RECIPE COMPUTE ============ */
 function buildRecipe(){
+  // BREWER'S COLLECTION is a wholly separate recipe source from Dripnesia's own presets/custom
+  // engine (fixed, source-verified values rather than values computed from a ratio/bloomMult
+  // model) — so when it's the active category, delegate entirely and return early. Switching
+  // back to 'recommended' or 'custom' later finds state.style/manualRatio exactly as they were,
+  // since nothing here touches them.
+  if(state.category==='collection'){
+    const cr = state.collection.id ? findCollectionRecipe(state.collection.id) : null;
+    if(cr && cr.brewer===state.brewer) return buildCollectionRecipe(cr);
+    // No compatible collection recipe is actively selected (fresh arrival into this category,
+    // a brewer with zero published recipes, or a stale id that no longer matches). This must
+    // NEVER fall through to the normal Dripnesia preset/custom engine — that would silently
+    // display an unrelated recipe as if it were the chosen Brewer's Collection result. Return a
+    // minimal empty-state sentinel instead; renderSheet() shows a dedicated empty-state card.
+    return { category:'collection', isEmpty:true, brewer: BREWERS[state.brewer] };
+  }
+
   const brewer = BREWERS[state.brewer];
-  const dose = state.dose;
+  const dose = activeDose();
 
   // Simple and Detail always read the SAME underlying state.style — view mode only changes
-  // which controls are visible, never which recipe is active. (A fresh first-time user gets a
-  // real default preset selected once at startup — see INIT at the bottom of this script —
-  // rather than a display-only substitute computed here.)
-  const styleObj = state.style ? currentStyles().find(s=>s.key===state.style) : null;
+  // which controls are visible, never which recipe is active. `state.style` is a persistent
+  // memory slot for the Recommended category specifically: it is never cleared just because the
+  // user is currently looking at Custom or Brewer's Collection, so returning to Recommended
+  // always restores the exact preset the user had selected there (e.g. Classic 3-Pour), never
+  // silently replacing it with the default. It only drives the actual calculation while
+  // category==='recommended' — otherwise it's inert memory, consulted by nothing here.
+  const styleObj = (state.category==='recommended' && state.style) ? currentStyles().find(s=>s.key===state.style) : null;
 
   let name, ratio, isIced, grindAdj, tempTag, brewTime, tips, recipeReason, icePct;
 
@@ -932,6 +1510,117 @@ function buildRecipe(){
   return { brewer, name, dose, ratio, ratioHotDisplay, ratioTotalDisplay, totalWater, hotWater, iceGrams, retention, estYield, iceMeltPct: Math.round(ICE_MELT_ASSUMED*100), temp, tempRef: styleObj ? null : getTempRef(state.brewer), grind, bloomWater, autoBloom, bloomMax, table: built.rows, pourEndTime: built.pourEndTime, isIced, pourCount: pourPlan?pourPlan.length:null, pourPlan, pourLeftBefore, pourMaxAllowed, brewTime, tips, recipeReason, isCustom: !styleObj };
 }
 
+/* ============ BREWER'S COLLECTION — RECIPE COMPUTE ============
+   A wholly separate calculation path from Dripnesia's own presets/custom engine: every number
+   starts from the verified source data in COLLECTION, not from a ratio/bloomMult model. Dose
+   adaptation for 'pourover'-kind recipes reuses the exact same smart-rounding
+   (scalePourTargets) Dripnesia's own presets use; 'action'-kind recipes (immersion, AeroPress
+   with bypass water) get a parallel exact-total-preserving scale for each step's grams. Either
+   way, the recipe's own timestamps/labels/sequence never change on dose adaptation — only
+   quantities do — and the displayed total is always derived FROM the scaled steps themselves
+   (never computed in parallel), so it can never drift out of sync with what the table shows. */
+// Each grams-bearing step in an 'action' recipe is an independently meaningful quantity (e.g.
+// AeroPress's brewing water and its bypass water are NOT parts of one single pour target the
+// way a pour-over's cumulative total is — they're two separate waters serving different roles).
+// So each is scaled and rounded on its own, rather than forcing their sum to hit one combined
+// "exact total" by absorbing rounding into whichever step happens to be last — that approach
+// would blur brewing water and bypass water together as if they were one quantity.
+function scaleActionSteps(steps, originalDose, effectiveDose){
+  const scale = effectiveDose / originalDose;
+  return steps.map(s => s.grams!==undefined ? {...s, grams: Math.max(1, Math.round(s.grams*scale))} : {...s});
+}
+function buildCollectionRecipe(cr){
+  const brewer = BREWERS[state.brewer];
+  const o = cr.original;
+  const adapted = !!state.collection.adapted;
+  const effectiveDose = (adapted && state.collection.dose!=null) ? state.collection.dose : o.dose;
+  const effectiveTempNumber = (adapted && state.collection.temp!=null) ? state.collection.temp : o.tempNumber;
+  const effectiveTempText = (adapted && state.collection.temp!=null) ? null : o.tempText;
+  const effectiveGrind = (adapted && state.collection.grind!=null) ? state.collection.grind : o.grindText;
+  const doseChanged = effectiveDose !== o.dose;
+
+  let table = [], pourEndTime = null, totalWater, brewWater = null, bypassWater = null;
+  if(cr.kind==='pourover'){
+    // Only steps explicitly marked as actual water additions (pour!==false — Bloom and each
+    // numbered pour) are water-adding events. Non-pouring actions (Swirl, Stir, etc.) share the
+    // SAME cumulative total as the pour immediately before them, by construction in the source
+    // data, and must never be treated as pours themselves — scalePourTargets' strictly-increasing
+    // enforcement would otherwise "fix" their flat (non-increasing) total by bumping it up,
+    // fabricating water that was never actually added during a swirl or stir.
+    let scaledSteps = o.steps;
+    if(doseChanged){
+      const pourIdx = [];
+      o.steps.forEach((s,i)=>{ if(s.pour!==false) pourIdx.push(i); });
+      const baseTargets = pourIdx.map(i=>o.steps[i].total);
+      const scaledTargets = scalePourTargets(baseTargets, effectiveDose, o.dose);
+      scaledSteps = o.steps.map(s=>({...s}));
+      pourIdx.forEach((idx,j)=>{ scaledSteps[idx].total = scaledTargets[j]; });
+      // Non-pour steps inherit the cumulative total of the most recent pour before them —
+      // their total is a side-effect of reading that cumulative state, never scaled itself.
+      let lastTotal = 0;
+      scaledSteps.forEach(s=>{
+        if(s.pour===false) s.total = lastTotal; else lastTotal = s.total;
+      });
+    }
+    let prevTotal = 0;
+    table = scaledSteps.map(s=>{
+      const add = s.pour===false ? 0 : (s.total - prevTotal);
+      if(s.pour!==false) prevTotal = s.total;
+      return { step:s.label, time:fmtTime(s.atSec), add:(add>0 ? add+' g' : '—'), total:s.total+' g' };
+    });
+    totalWater = scaledSteps[scaledSteps.length-1].total;
+    pourEndTime = fmtTime(scaledSteps[scaledSteps.length-1].atSec);
+  } else { // 'action' kind — immersion / AeroPress-style techniques, not a generic pour sequence
+    // Each grams-bearing step is tagged waterType:'brew' (passes through the coffee bed) or
+    // 'bypass' (added after pressing purely to dilute — never touches the grounds). Steps with
+    // no waterType (e.g. French Press's single water addition) are treated as brew water, since
+    // there's no bypass concept for that technique. brewWater/bypassWater are tallied
+    // separately so the summary and ratio can state each honestly instead of only ever showing
+    // one combined number that would imply all of it passed through the coffee.
+    const scaledSteps = doseChanged ? scaleActionSteps(o.steps, o.dose, effectiveDose) : o.steps.map(s=>({...s}));
+    let cum = 0; brewWater = 0; bypassWater = 0;
+    table = scaledSteps.map(s=>{
+      if(s.grams!==undefined){
+        cum += s.grams;
+        if(s.waterType==='bypass') bypassWater += s.grams; else brewWater += s.grams;
+      }
+      return { step:s.label, time:s.time, add:(s.grams!==undefined ? s.grams+' g' : '—'), total:(cum>0 ? cum+' g' : '—') };
+    });
+    totalWater = brewWater + bypassWater;
+    const timedSteps = scaledSteps.filter(s=>s.time && /^\d/.test(s.time));
+    pourEndTime = timedSteps.length ? timedSteps[timedSteps.length-1].time.split('–').pop() : null;
+  }
+
+  // Two distinct ratios for a recipe with bypass water: the brewing-water ratio (what actually
+  // extracted through the coffee bed) and the total-water ratio (including dilution water added
+  // after pressing) — showing only one would either overstate strength or imply all the water
+  // touched the grounds. For a recipe with no bypass (bypassWater===0), both are identical.
+  const brewRatio = (brewWater!=null && effectiveDose) ? +(brewWater/effectiveDose).toFixed(2) : null;
+  const totalRatio = effectiveDose ? +(totalWater/effectiveDose).toFixed(2) : null;
+
+  return {
+    brewer, name: cr.title, dose: effectiveDose, ratio: totalRatio!=null ? totalRatio : o.ratio,
+    ratioHotDisplay: o.ratio, ratioTotalDisplay: o.ratio,
+    totalWater, hotWater: totalWater, iceGrams:0, isIced:false,
+    brewWater, bypassWater, brewRatio, totalRatio,
+    retention:null, estYield:null, iceMeltPct:null,
+    temp: effectiveTempNumber, tempText: effectiveTempText, tempRef:null, grind: effectiveGrind,
+    bloomWater:0, autoBloom:0, bloomMax:0,
+    table, pourEndTime,
+    pourCount:null, pourPlan:null, pourLeftBefore:null, pourMaxAllowed:null,
+    brewTime: o.totalTimeText, tips:null, recipeReason:null, isCustom:false,
+    category:'collection',
+    collectionMeta:{
+      id:cr.id, creator:cr.creator, title:cr.title, sourceLabel:cr.sourceLabel, sourceUrl:cr.sourceUrl,
+      verifiedNote:cr.verifiedNote, status: adapted ? 'adapted' : 'original',
+      originalDose:o.dose, originalTotalWater:o.totalWater, originalTempNumber:o.tempNumber, originalTempText:o.tempText,
+      originalGrindText:o.grindText, originalBrewWater:o.brewWater!=null?o.brewWater:null, originalBypassGrams:o.bypassGrams!=null?o.bypassGrams:null,
+      doseChanged,
+      allowDoseAdapt:cr.allowDoseAdapt, allowTempAdapt:cr.allowTempAdapt, allowGrindAdapt:cr.allowGrindAdapt,
+    }
+  };
+}
+
 /* buildTable returns { rows, pourEndTime }. The underlying timing engine still computes bloom
    duration, inter-pour rest and recipe-specific pour start/end times in full (so the schedule
    itself is unchanged) — but standalone "waiting" rows are no longer rendered as their own
@@ -1002,7 +1691,7 @@ function parseTimeToSec(mmss){
 /* ============ RENDER: ADVANCED (bloom + pour count) ============ */
 function renderBloomSlider(r){
   const block = document.getElementById('bloomBlock');
-  if(!r.brewer.bloomMult){
+  if(!r.brewer.bloomMult || state.category!=='custom'){
     block.style.display = 'none';
     return;
   }
@@ -1064,7 +1753,7 @@ function renderTempRefChips(r, locked){
 
 function renderPourPlan(r){
   const block = document.getElementById('pourPlanBlock');
-  const applies = r.brewer.family==='pourover';
+  const applies = r.brewer.family==='pourover' && state.category==='custom';
   block.style.display = applies ? '' : 'none';
   if(!applies) return;
 
@@ -1123,7 +1812,84 @@ function renderPourPlan(r){
 }
 
 /* ============ RENDER: SHEET ============ */
+function renderCollectionSheet(r){
+  const out = document.getElementById('sheetOutput');
+
+  if(r.isEmpty){
+    out.innerHTML = `
+      <div class="sheet-eyebrow hot">Brewer's Collection</div>
+      <div class="sheet-title">${r.brewer.name} — Belum ada resep dipilih</div>
+      <div class="hint-box" style="margin:-10px 0 0;">Pilih resep dari Brewer's Collection untuk melihat panduan seduh.</div>
+    `;
+    return;
+  }
+
+  const m = r.collectionMeta;
+  const statusLabel = m.status==='adapted' ? 'Adaptasi Dripnesia' : 'Resep Original';
+  const tempLine = r.temp!=null ? `${r.temp}°C` : (r.tempText || '—');
+  const hasBypass = r.bypassWater!=null && r.bypassWater>0;
+
+  const waterRows = hasBypass ? `
+      <div class="kn"><div class="kn-label">Air seduh (lewat kopi)</div><div class="kn-value">${r.brewWater} g</div></div>
+      <div class="kn"><div class="kn-label">Air bypass (setelah ditekan)</div><div class="kn-value">${r.bypassWater} g</div></div>
+      <div class="kn"><div class="kn-label">Total air</div><div class="kn-value">${r.totalWater} g</div></div>
+      <div class="kn"><div class="kn-label">Rasio (air seduh)</div><div class="kn-value">1:${r.brewRatio}</div></div>
+      <div class="kn full"><div class="kn-label">Rasio (total + bypass)</div><div class="kn-value">1:${r.totalRatio}</div></div>` : `
+      <div class="kn"><div class="kn-label">Total air</div><div class="kn-value">${r.totalWater} g</div></div>
+      <div class="kn"><div class="kn-label">Rasio</div><div class="kn-value">1:${r.ratio}</div></div>`;
+
+  const tableRows = r.table.map(row=>`<tr><td>${row.step}</td><td class="mono">${row.time}</td><td class="mono">${row.add}</td><td class="mono total-cell">${row.total}</td></tr>`).join('');
+
+  out.innerHTML = `
+    <div class="sheet-eyebrow hot">Brewer's Collection · ${statusLabel}</div>
+    <div class="sheet-title">${r.brewer.name} — ${m.title}</div>
+    <div class="hint-box" style="margin:-10px 0 16px;">oleh <b>${m.creator}</b> · Resep berdasarkan metode yang dipublikasikan oleh ${m.creator}. Bukan kerja sama atau endorsement resmi dari pembuat aslinya.</div>
+
+    <div class="keynum-grid">
+      <div class="kn"><div class="kn-label">Dosis kopi</div><div class="kn-value purple">${r.dose} g${m.doseChanged?' (disesuaikan)':''}</div></div>
+      ${waterRows}
+    </div>
+    ${hasBypass ? `<div class="hint-box" style="margin-top:-6px;">Air bypass ditambahkan setelah ditekan untuk mengencerkan — airnya TIDAK melewati bubuk kopi, jadi bukan bagian dari ekstraksi. Total air di atas adalah gabungan keduanya, bukan angka yang semuanya melewati kopi.</div>` : ''}
+
+    <div class="subrow">
+      <div class="sr-item"><div class="sr-label">Grind</div><div class="sr-value">${r.grind}</div></div>
+      <div class="sr-item"><div class="sr-label">Suhu</div><div class="sr-value">${tempLine}</div></div>
+      <div class="sr-item"><div class="sr-label">Estimasi total</div><div class="sr-value">${r.brewTime}</div></div>
+    </div>
+    ${m.doseChanged ? `<div class="hint-box" style="margin-top:-6px;">Dosis disesuaikan dari ${m.originalDose} g asli — waktu di atas adalah referensi awal dari teknik aslinya, bukan jadwal yang tervalidasi ulang untuk dosis baru ini. Mengubah dosis bisa mengubah lama ekstraksi/drawdown yang sebenarnya.</div>` : ''}
+    ${r.tempText && r.temp==null ? `<div class="hint-box" style="margin-top:-6px;">${r.tempText}</div>` : (m.status==='adapted' && r.temp!=m.originalTempNumber ? `<div class="hint-box" style="margin-top:-6px;">Suhu di atas adalah penyesuaianmu sendiri, bukan instruksi asli dari pembuat resep.</div>` : '')}
+
+    <table class="brewtable">
+      <thead><tr><th>Step</th><th>Time</th><th>Add</th><th>Total</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+
+    <div class="hint-box"><b>Sumber:</b> <a href="${m.sourceUrl}" target="_blank" rel="noopener" style="color:var(--purple);">${m.sourceLabel}</a><br><span style="opacity:.75;">${m.verifiedNote}</span></div>
+
+    <div class="ts-block">
+      <div class="section-heading ts-toggle-heading" onclick="toggleTsSection()">Troubleshooting <span class="ts-chevron" id="tsChevron">▾</span></div>
+      <div class="section-sub">Belum pas rasanya? It's all good — itu bukan berarti gagal, cuma tanda buat disesuaikan sedikit.</div>
+      <div id="tsListWrap"><div id="tsList"></div></div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn primary" onclick="shareRecipe()">Bagikan Resep</button>
+      <button class="btn secondary" onclick="saveRecipe()">Simpan Resep</button>
+    </div>
+    <button class="restart-link" onclick="openSaved()">Lihat resep tersimpan</button>
+    <button class="restart-link" onclick="resetAll()">Mulai resep baru</button>
+  `;
+
+  const tsList = document.getElementById('tsList');
+  TROUBLESHOOT.forEach((item,i)=>{
+    const d = document.createElement('div');
+    d.className='ts-item';
+    d.innerHTML = `<button class="ts-q" onclick="toggleTs(${i})">${item.q}<span class="chev">+</span></button><div class="ts-a"><div class="ts-a-inner">${item.a}</div></div>`;
+    tsList.appendChild(d);
+  });
+}
 function renderSheet(r){
+  if(r.category==='collection') return renderCollectionSheet(r);
   const out = document.getElementById('sheetOutput');
 
   // r.pourEndTime (last pour-completion time) is still computed internally by buildTable() and
@@ -1215,9 +1981,13 @@ function renderAll(){
   renderBrewerTabs();
   renderDrinkSeg();
   renderIcePlacement();
+  renderCategoryTabs();
+  renderCategoryVisibility();
+  renderCustomSeedBlock();
   renderDoseControls();
   renderRatioControls();
   renderStyleTabs();
+  renderCollectionBlock();
   const r = buildRecipe();
   lastRecipe = r;
   renderBloomSlider(r);
@@ -1230,8 +2000,11 @@ function resetAll(){
   // "Mulai resep baru" returns to the same real, actual starting recipe as a brand-new session
   // (Cone Dripper, Hot, 15g, Dripnesia Recommended) rather than an unexplained custom state —
   // matching the one-time INIT default at the bottom of this script.
-  state = { brewer:'cone', drink:'hot', style:'recommended', lastPresetKey:null, manualRatio:{}, bloomManual:{}, tempManual:{}, tempRef:{}, dose:15, pourCount:null, pourManual:{}, icePlacement:'start' };
-  renderAll();
+  state = { brewer:'cone', drink:'hot', category:'recommended', style:'recommended', lastPresetKey:null, manualRatio:{}, bloomManual:{}, tempManual:{}, tempRef:{}, dose:15, customDose:{}, customSeeded:{}, customNotice:[], pourCount:null, pourManual:{}, icePlacement:'start', collection:{ id:null, adapted:false, dose:null, temp:null, grind:null } };
+  // Reset must look and behave like a genuine fresh first-time visit — that includes the
+  // Simple/Detail indicator itself, which setViewMode() also updates (not just `state`, which is
+  // already fully replaced above), not just the recipe underneath it.
+  setViewMode('clean');
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -1239,6 +2012,28 @@ function resetAll(){
 function recipeAsText(){
   const r = lastRecipe;
   let lines = [];
+  if(r.isEmpty) return 'Belum ada resep Brewer\'s Collection yang dipilih.';
+  if(r.category==='collection'){
+    const m = r.collectionMeta;
+    lines.push(`Dripnesia Brew Guide — ${r.brewer.name} · ${m.title} oleh ${m.creator} (${m.status==='adapted'?'Adaptasi Dripnesia':'Resep Original'})`);
+    lines.push(`Sumber: ${m.sourceLabel} — ${m.sourceUrl}`);
+    if(r.bypassWater!=null && r.bypassWater>0){
+      lines.push(`Dosis kopi: ${r.dose} g`);
+      lines.push(`Air seduh (lewat kopi): ${r.brewWater} g  ·  Air bypass (setelah ditekan): ${r.bypassWater} g  ·  Total air: ${r.totalWater} g`);
+      lines.push(`Rasio (air seduh): 1:${r.brewRatio}  ·  Rasio (total + bypass): 1:${r.totalRatio}`);
+    } else {
+      lines.push(`Dosis kopi: ${r.dose} g  ·  Total air: ${r.totalWater} g  ·  Rasio: 1:${r.ratio}`);
+    }
+    const tempLine = r.temp!=null ? `${r.temp}°C` : (r.tempText || 'lihat catatan sumber');
+    lines.push(`Suhu: ${tempLine}  ·  Grind: ${r.grind}`);
+    lines.push(`Estimasi total: ${r.brewTime} — titik awal referensi, bukan patokan pasti`);
+    lines.push('');
+    lines.push('Step | Time | Add | Total');
+    r.table.forEach(row=> lines.push(`${row.step} | ${row.time} | ${row.add} | ${row.total}`));
+    lines.push('');
+    lines.push('Resep berdasarkan metode yang dipublikasikan oleh ' + m.creator + '. Bukan kerja sama atau endorsement resmi dari pembuat aslinya.');
+    return lines.join('\n');
+  }
   lines.push(`Dripnesia Brew Guide — ${r.brewer.name} · ${r.isCustom?'Racikan Sendiri':r.name} (${r.isIced?'Iced':'Hot'})`);
   lines.push(`Dosis kopi: ${r.dose} g`);
   if(r.isIced){ lines.push(`Air panas: ${r.hotWater} g`); lines.push(`Es: ${r.iceGrams} g`); lines.push(`Rasio (air panas): 1:${r.ratioHotDisplay}  ·  Rasio (total+es): 1:${r.ratioTotalDisplay}`); lines.push(`Estimasi minuman jadi: ~${r.estYield} g (perkiraan, bukan ukuran pasti)`); }
@@ -1267,18 +2062,26 @@ function getSaved(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY))||[];
 function setSaved(list){ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); }
 function saveRecipe(){
   const r = lastRecipe;
+  if(!r || r.isEmpty) return; // nothing concrete to save (e.g. Collection with no recipe picked yet)
   const list = getSaved();
+  const label = r.category==='collection'
+    ? `${r.brewer.name} · ${r.collectionMeta.title} oleh ${r.collectionMeta.creator} (${r.collectionMeta.status==='adapted'?'Adaptasi':'Original'})`
+    : `${r.brewer.name} · ${r.isCustom?'Racikan Sendiri':r.name} (${r.isIced?'Iced':'Hot'})`;
   list.unshift({
     id: Date.now(),
-    label: `${r.brewer.name} · ${r.isCustom?'Racikan Sendiri':r.name} (${r.isIced?'Iced':'Hot'})`,
+    label,
     ts: new Date().toLocaleString('id-ID'),
     // Full fidelity save: every manual control the recipe actually used, so re-loading it
-    // reproduces it exactly rather than silently resetting a custom pour distribution.
+    // reproduces it exactly rather than silently resetting a custom pour distribution. Phase 2
+    // also persists category + the collection slot (id/adapted/dose/temp/grind) so a saved
+    // Brewer's Collection recipe restores to the exact same method + adaptation, not Recommended.
     state: {
       brewer: state.brewer,
       drink: state.drink,
+      category: state.category,
       style: state.style,
       dose: state.dose,
+      customDose: state.customDose[state.brewer],
       pourCount: state.pourCount,
       icePlacement: state.icePlacement,
       manualRatio: state.manualRatio[state.brewer],
@@ -1286,7 +2089,8 @@ function saveRecipe(){
       tempManual: state.tempManual[state.brewer],
       tempRef: state.tempRef[state.brewer],
       pourManual: Object.assign({}, state.pourManual),
-      isCustom: r.isCustom
+      isCustom: r.isCustom,
+      collection: Object.assign({}, state.collection),
     }
   });
   setSaved(list.slice(0,30));
@@ -1316,9 +2120,17 @@ function loadSaved(id){
   const s = item.state || {};
   // Backward-compatible: older saves missing newer fields (tempRef, bloomManual, pourManual,
   // isCustom) just fall back to defaults instead of crashing.
+  // Older saves (pre-Phase 2) never had category/collection — they were always either a
+  // Dripnesia preset or Custom, which maps 1:1 onto the new category field. A Phase 2 save
+  // carries its own explicit category/collection and takes priority when present.
+  const category = s.category || (s.isCustom ? 'custom' : 'recommended');
+  // Brewer's Collection is Hot-only — a saved collection recipe always restores to Hot,
+  // regardless of what drink mode was saved or what the app is currently showing.
+  const restoredDrink = category==='collection' ? 'hot' : (s.drink || 'hot');
   state = {
     brewer: s.brewer,
-    drink: s.drink || 'hot',
+    drink: restoredDrink,
+    category,
     style: s.isCustom ? null : (s.style || null),
     lastPresetKey: null,
     manualRatio: {},
@@ -1326,12 +2138,44 @@ function loadSaved(id){
     tempManual: {},
     tempRef: {},
     dose: s.dose!==undefined ? s.dose : 15,
+    customDose: {},
+    customSeeded: {},
+    customNotice: [],
     pourCount: s.pourCount || null,
     pourManual: {},
     icePlacement: s.icePlacement || 'start',
+    collection: s.collection ? {
+      id: s.collection.id || null,
+      adapted: !!s.collection.adapted,
+      dose: s.collection.dose!=null ? s.collection.dose : null,
+      temp: s.collection.temp!=null ? s.collection.temp : null,
+      grind: s.collection.grind || null,
+    } : { id:null, adapted:false, dose:null, temp:null, grind:null },
   };
   if(!BREWERS[state.brewer]) state.brewer = 'cone'; // guard against a stale/removed brewer key
   if(state.style && !(STYLES[state.brewer]||[]).find(x=>x.key===state.style)) state.style = null;
+  if(state.category==='recommended' && !state.style) state.style = defaultStyleKeyFor(state.brewer);
+  // A saved collection recipe that no longer matches the restored brewer (or no longer exists)
+  // must not silently stay "active" — fall back to Recommended rather than crashing buildRecipe().
+  if(state.category==='collection'){
+    const cr = state.collection.id ? findCollectionRecipe(state.collection.id) : null;
+    if(!cr || cr.brewer !== state.brewer){
+      state.category = 'recommended';
+      state.collection = { id:null, adapted:false, dose:null, temp:null, grind:null };
+      if(!state.style) state.style = defaultStyleKeyFor(state.brewer);
+    }
+  }
+  // Custom dose lives in its own slot. Old custom saves only had `dose`, so fall back to it.
+  // A custom save is a complete Custom recipe, so mark it seeded: later category switches
+  // must not overwrite it.
+  if(category==='custom' || s.isCustom){
+    const cd = s.customDose!==undefined ? s.customDose : s.dose;
+    if(cd!==undefined && cd!==null) state.customDose[state.brewer] = Math.min(CUSTOM_DOSE_RANGE[1], Math.max(CUSTOM_DOSE_RANGE[0], cd));
+    state.customSeeded[state.brewer] = true;
+  } else if(s.customDose!==undefined && s.customDose!==null){
+    state.customDose[state.brewer] = s.customDose;
+    state.customSeeded[state.brewer] = true;
+  }
   if(s.manualRatio!==undefined) state.manualRatio[state.brewer] = s.manualRatio;
   if(s.bloomManual!==undefined) state.bloomManual[state.brewer] = s.bloomManual;
   if(s.tempManual!==undefined) state.tempManual[state.brewer] = s.tempManual;
