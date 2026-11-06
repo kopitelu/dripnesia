@@ -3,7 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dripnesia Brew Guide</title>
+<title>Kalkulator Seduh Kopi V60 &amp; Manual Brew | Dripnesia</title>
+<meta name="description" content="Hitung rasio kopi dan air, atur suhu, serta ikuti panduan pouring V60, French Press, dan AeroPress. Gratis dengan Dripnesia Brew Guide.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://dripnesia.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dripnesia">
+<meta property="og:locale" content="id_ID">
+<meta property="og:title" content="Kalkulator Seduh Kopi V60 &amp; Manual Brew | Dripnesia">
+<meta property="og:description" content="Hitung rasio kopi dan air, atur suhu, serta ikuti panduan pouring V60, French Press, dan AeroPress. Gratis dengan Dripnesia Brew Guide.">
+<meta property="og:url" content="https://dripnesia.com/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kalkulator Seduh Kopi V60 &amp; Manual Brew | Dripnesia">
+<meta name="twitter:description" content="Hitung rasio kopi dan air, atur suhu, serta ikuti panduan pouring V60, French Press, dan AeroPress. Gratis dengan Dripnesia Brew Guide.">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
@@ -15,7 +27,35 @@
 <meta name="apple-mobile-web-app-title" content="Dripnesia">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Dripnesia Brew Guide",
+  "url": "https://dripnesia.com/",
+  "description": "Hitung rasio kopi dan air, atur suhu, serta ikuti panduan pouring V60, French Press, dan AeroPress. Gratis dengan Dripnesia Brew Guide.",
+  "inLanguage": "id",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Any (web browser)",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "IDR"
+  },
+  "featureList": [
+    "Kalkulator rasio kopi dan air",
+    "Pengaturan suhu air, bloom, dan jumlah tuangan",
+    "Panduan langkah seduh untuk V60 (Cone Dripper), Flat-Bottom, French Press, dan AeroPress",
+    "Mode Hot dan Iced",
+    "Simpan dan muat resep",
+    "Brewer's Collection dengan sumber resep yang dicantumkan"
+  ]
+}
+</script>
 <style>
   :root{
     --bg:#FFFFFF;
@@ -87,6 +127,16 @@
   }
   .tab:hover{ background:var(--lav-bg); border-color:var(--soft-purple); }
   .tab.active{ background:var(--purple); border-color:var(--purple); color:#fff; }
+
+  /* SEO info section (static HTML below the app) */
+  .seo-info{ max-width:1180px; margin:0 auto; padding:8px 20px 64px; color:var(--ink); }
+  .seo-info .seo-inner{ max-width:760px; border-top:1px solid var(--border); padding-top:28px; }
+  .seo-info h2{ font-size:19px; font-weight:800; margin:28px 0 8px; line-height:1.3; }
+  .seo-info h2:first-child{ margin-top:0; }
+  .seo-info p, .seo-info li{ font-size:14px; line-height:1.65; color:var(--muted); }
+  .seo-info ul, .seo-info ol{ margin:8px 0 0; padding-left:20px; }
+  .seo-info li{ margin:4px 0; }
+  .seo-info strong{ color:var(--ink); }
 
   /* SEGMENTED */
   .segmented{ display:flex; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; width:max-content; }
@@ -283,7 +333,7 @@
 <div class="app">
 
   <div class="header">
-    <svg class="header-rings" viewBox="0 0 220 220"><circle cx="180" cy="40" r="30" fill="none" stroke="#6F4AA8" stroke-width="1.2"/><circle cx="180" cy="40" r="55" fill="none" stroke="#6F4AA8" stroke-width="1"/><circle cx="180" cy="40" r="80" fill="none" stroke="#6F4AA8" stroke-width="0.8"/></svg>
+    <svg class="header-rings" aria-hidden="true" focusable="false" viewBox="0 0 220 220"><circle cx="180" cy="40" r="30" fill="none" stroke="#6F4AA8" stroke-width="1.2"/><circle cx="180" cy="40" r="55" fill="none" stroke="#6F4AA8" stroke-width="1"/><circle cx="180" cy="40" r="80" fill="none" stroke="#6F4AA8" stroke-width="0.8"/></svg>
     <h1 class="h-title">Dripnesia Brew Guide</h1>
     <span class="tagline-badge">Brew Your Way. It's All Good.</span>
     <div class="h-sub">Atur resep dan langkah seduh sesuai alat, dosis kopi, dan gaya seduhmu.<br><span class="clean-hide">Nggak ada seduhan yang gagal — semua eksperimen itu langkah buat nemuin rasa favoritmu.</span></div>
@@ -398,6 +448,33 @@
   </div>
 
 </div>
+
+<section class="seo-info" id="tentang" aria-labelledby="seo-tentang">
+  <div class="seo-inner">
+    <h2 id="seo-tentang">Kalkulator Seduh Kopi untuk V60 dan Manual Brew</h2>
+    <p>Dripnesia Brew Guide membantu menghitung rasio kopi dan air, mengatur suhu air, serta menampilkan langkah seduh yang mudah diikuti. Masukkan dosis kopi, pilih alat seduh dan mode Hot atau Iced, lalu kartu resep langsung menghitung jumlah air, bloom, dan tuangan. Cocok untuk pemula maupun penyeduh rumahan yang ingin bereksperimen dengan rasa.</p>
+
+    <h2>Alat Seduh yang Didukung</h2>
+    <ul>
+      <li><strong>Cone Dripper</strong> — V60, Kono, dan Origami Cone, dengan panduan pouring bertahap.</li>
+      <li><strong>Flat-Bottom</strong> — Kalita Wave, Orea, April Brewer, dan Origami Flat.</li>
+      <li><strong>French Press</strong> — seduh rendam penuh (full immersion).</li>
+      <li><strong>AeroPress</strong> — kombinasi rendam dan tekan, termasuk pilihan Iced.</li>
+    </ul>
+
+    <h2>Cara Menggunakan Dripnesia Brew Guide</h2>
+    <ol>
+      <li>Pilih alat seduh dan mode minuman, Hot atau Iced.</li>
+      <li>Atur dosis kopi dengan slider atau pilihan cepat.</li>
+      <li>Pilih resep: <em>Dripnesia Recommended</em>, <em>Custom</em> untuk mengatur rasio, suhu, bloom, dan tuangan sendiri, atau <em>Brewer's Collection</em>.</li>
+      <li>Ikuti tabel langkah seduh di kartu resep, lalu simpan atau bagikan resepmu.</li>
+    </ol>
+
+    <h2>Tentang Brewer's Collection</h2>
+    <p>Brewer's Collection berisi resep dari penyeduh dan juara kompetisi yang sumbernya dicantumkan di setiap resep. Kamu bisa melihat resep aslinya atau menyesuaikan takarannya dengan dosis kopimu.</p>
+    <noscript><p>Kalkulator ini membutuhkan JavaScript. Aktifkan JavaScript di browsermu untuk menggunakan Dripnesia Brew Guide.</p></noscript>
+  </div>
+</section>
 
 <div class="toast" id="toast"></div>
 
