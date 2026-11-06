@@ -2676,16 +2676,81 @@ function createTimerEngine(env){
 
 /* ---- 3. audio + vibration ---- */
 const BrewAudio = {
-  ctx:null, enabled:true, supported:true, master:null, seq:0,
-  unlock(){
+  ctx:null, enabled:true, supported:true, master:null, seq:0, session:0,
+  voices:[], pending:null, attempt:null,
+  // Lifecycle: a context is created/replaced ONLY from a user gesture (unlock) or when it has been closed. Healthy
+  // ('running') contexts are always reused. 'interrupted' (WebKit) and 'closed' contexts cannot be resumed reliably,
+  // so they are replaced; 'suspended' is resumed. The output graph is rebuilt lazily for whichever context is current.
+  _make(){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC){ this.supported = false; return null; }      // unsupported only when the API truly doesn't exist
+    const c = new AC();
+    this.ctx = c; this.master = null; this.voices = [];
+    try{ c.onstatechange = ()=>{ try{ BrewTimer.refreshNotes(); }catch(e){} }; }catch(e){}
+    return c;
+  },
+  _retire(c){
+    if(!c) return;
+    try{ c.onstatechange = null; }catch(e){}
+    try{ const r = c.close && c.close(); if(r && r.catch) r.catch(()=>{}); }catch(e){}
+  },
+  _silentKick(c){                              // standard one-sample unlock; not a background loop
+    try{ const b = c.createBuffer(1,1,22050), src = c.createBufferSource(); src.buffer = b; src.connect(c.destination); src.start(0); }catch(e){}
+  },
+  // Single-flight resume. At most one LIVE attempt exists, tied to (context, session). A stale attempt (older session,
+  // other context, cancelled by Reset / Sound Off) is superseded and can no longer flush a cue, release state or resolve
+  // for anyone: its late resolve/reject is ignored. A hung resume() is abandoned after 1.2 s (same window as cue freshness).
+  _resume(c){
+    const a0 = this.attempt;
+    if(a0 && a0.ctx===c && a0.session===this.session) return a0.promise;
+    if(a0){ clearTimeout(a0.timer); a0.fin(false); }
+    const a = { ctx:c, session:this.session, timer:null, fin:null, promise:null };
+    this.attempt = a;
+    a.promise = new Promise(res=>{
+      let done = false;
+      a.fin = ok=>{
+        if(done) return; done = true; clearTimeout(a.timer);
+        const live = this.attempt===a; if(live) this.attempt = null;
+        const good = live && !!ok && c===this.ctx && c.state==='running';
+        if(good) this._flush();
+        try{ BrewTimer.refreshNotes(); }catch(e){}
+        res(good);
+      };
+      a.timer = setTimeout(()=>a.fin(false), 1200);
+      try{ const r = c.resume(); if(r && r.then) r.then(()=>a.fin(true), ()=>a.fin(false)); else a.fin(true); }catch(e){ a.fin(false); }
+    });
+    return a.promise;
+  },
+  _flush(){                                    // sound the newest still-valid cue, once
+    const q = this.pending; this.pending = null;
+    if(q && q.ctx===this.ctx && q.session===this.session && q.seq===this.seq && Date.now()-q.asked<=1200) this._play(q.kind, q.stepType);
+  },
+  unlock(){                                    // call from a user gesture (Start Brewing / Sound On)
     try{
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if(!AC){ this.supported = false; return; }
-      if(!this.ctx) this.ctx = new AC();
-      if(this.ctx.state==='suspended' && this.ctx.resume){ this.ctx.resume().then(()=>BrewTimer.refreshNotes()).catch(()=>BrewTimer.refreshNotes()); }
-    }catch(e){ this.supported = false; }
+      let c = this.ctx;
+      if(!c || c.state==='closed' || c.state==='interrupted'){ const old = c; c = this._make(); this._retire(old); }
+      if(!c) return Promise.resolve(false);
+      this._silentKick(c);
+      if(c.state==='running') return Promise.resolve(true);
+      return this._resume(c);
+    }catch(e){ return Promise.resolve(false); }
+  },
+  wake(){                                      // returning to the foreground: best-effort resume
+    const c = this.ctx;
+    if(c && c.state!=='running' && c.state!=='closed') this._resume(c);
   },
   ready(){ return !!(this.ctx && this.ctx.state==='running'); },
+  // Silence everything scheduled so far and invalidate pending async work (Reset, Sound Off, new session).
+  cancel(){
+    this.seq++; this.pending = null;
+    const at = this.attempt; this.attempt = null; if(at){ clearTimeout(at.timer); at.fin(false); }   // invalidate any in-flight resume
+    const c = this.ctx, now = c ? c.currentTime : 0;
+    this.voices.splice(0).forEach(v=>{
+      try{ v.n.gain.cancelScheduledValues(now); v.n.gain.setValueAtTime(Math.max(v.n.gain.value||0.0001,0.0001), now); v.n.gain.exponentialRampToValueAtTime(0.0001, now+0.03); }catch(e){}
+      try{ v.o.stop(now+0.05); }catch(e){}
+    });
+  },
+  beginSession(){ this.cancel(); return ++this.session; },
   // Shared output stage: master gain -> gentle compressor/limiter -> speakers. Layered voices can therefore be
   // clearly present without ever clipping. (Falls back to the plain destination where a node type is missing.)
   out(){
@@ -2716,19 +2781,23 @@ const BrewAudio = {
       n.gain.exponentialRampToValueAtTime(0.0001, at + dur);
       o.connect(n); n.connect(dest);
       o.start(at); o.stop(at + dur + 0.03);
+      const now = c.currentTime;
+      this.voices = this.voices.filter(v=>v.end > now);
+      const v = { o:o, n:n, end:at + dur + 0.05 }; this.voices.push(v);
+      o.onended = ()=>{ try{ n.disconnect(); }catch(e){} this.voices = this.voices.filter(x=>x!==v); };
     };
     voice('triangle', freq, gain, 0.015);
     voice('sine', freq*2, gain*0.28, 0.02);
   },
   play(kind, stepType){
-    if(!this.enabled || !this.ctx) return false;
-    const mySeq = ++this.seq, asked = Date.now();
-    if(this.ctx.state==='suspended' && this.ctx.resume){          // first cue right after the Start tap
-      // Only a cue requested a moment ago may sound once audio wakes; anything older (tab was asleep) is dropped.
-      this.ctx.resume().then(()=>{ if(mySeq===this.seq && Date.now()-asked<=1200) this._play(kind, stepType); }).catch(()=>{});
-      return false;
-    }
-    return this._play(kind, stepType);
+    if(!this.enabled) return false;
+    let c = this.ctx;
+    if(!c || c.state==='closed'){ const old = c; c = this._make(); this._retire(old); if(!c) return false; }
+    if(c.state==='running') return this._play(kind, stepType);
+    // suspended / interrupted: remember only the newest cue, then (re)use the single live resume attempt
+    this.pending = { kind:kind, stepType:stepType, asked:Date.now(), session:this.session, seq:++this.seq, ctx:c };
+    this._resume(c);
+    return false;
   },
   _play(kind, stepType){
     if(!this.enabled || !this.ready()) return false;
@@ -2779,7 +2848,8 @@ const BrewTimer = (function(){
     const tools = el('div','bt-tools');
     els.sound = btn('Sound: On','bt-tool', ()=>{
       BrewAudio.enabled = !BrewAudio.enabled;
-      if(BrewAudio.enabled){ BrewAudio.unlock(); setTimeout(()=>BrewAudio.play('pre'), 60); }
+      if(BrewAudio.enabled){ const tok = BrewAudio.seq; BrewAudio.unlock().then(ok=>{ if(ok && BrewAudio.enabled && BrewAudio.seq===tok) BrewAudio.play('pre'); }); }   // direct tap re-arms audio; the short test blip plays only if nothing (Reset / Sound Off) intervened
+      else BrewAudio.cancel();                                                                                 // muting silences current cues at once
       refreshNotes(); render(true);
     });
     els.sound.setAttribute('aria-pressed','true');
@@ -2839,7 +2909,8 @@ const BrewTimer = (function(){
   }
 
   function start(){
-    BrewAudio.unlock();                        // unlocked by the explicit tap on Start Brewing
+    BrewAudio.beginSession();                  // new session identity; nothing from a previous session can sound
+    BrewAudio.unlock();                        // unlocked / re-armed by the explicit tap on Start Brewing
     if(!currentSchedule) return;
     engine.start(currentSchedule);             // the engine follows this frozen snapshot from here on
     startLoop();
@@ -2847,6 +2918,7 @@ const BrewTimer = (function(){
   }
   function reset(){
     stopLoop();
+    BrewAudio.cancel();                        // silence and invalidate the ended session's audio (does not mute future sessions)
     engine.reset();
     lastShown = {};
     render(true);
@@ -2858,7 +2930,7 @@ const BrewTimer = (function(){
   }
   function stopLoop(){ if(intervalId!==null){ clearInterval(intervalId); intervalId = null; } }
   document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden && engine.status()==='running'){ engine.tick(); render(true); }
+    if(!document.hidden && engine.status()==='running'){ BrewAudio.wake(); engine.tick(); render(true); }
   });
 
   function refreshNotes(){
