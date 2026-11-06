@@ -209,6 +209,11 @@
   input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--purple); cursor:pointer; border:2px solid #fff; box-shadow:0 0 0 1px var(--purple);
   }
+  input[type=range]{ touch-action:pan-y; }   /* horizontal drag belongs to the slider; vertical page scroll still works */
+  @media (pointer:coarse){
+    input[type=range]::-webkit-slider-thumb{ width:22px; height:22px; }
+    input[type=range]::-moz-range-thumb{ width:22px; height:22px; }
+  }
   input[type=range]::-moz-range-thumb{ width:16px; height:16px; border-radius:50%; background:var(--purple); border:2px solid #fff; box-shadow:0 0 0 1px var(--purple); cursor:pointer; }
   .slider-endcaps{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted); margin-bottom:12px; }
   .chip-row{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
@@ -1068,12 +1073,20 @@ function renderCollectionBlock(){
   const listEl = document.getElementById('collectionList');
   const adaptEl = document.getElementById('collectionAdaptPanel');
   const items = getCollectionFor(state.brewer);
-  listEl.innerHTML = '';
   if(items.length===0){
     listEl.innerHTML = '<div class="hint-box">Belum ada resep Brewer\'s Collection yang bisa diverifikasi sumbernya untuk alat seduh ini. Coba alat seduh lain, atau pakai Custom — Brew Your Way untuk atur resepmu sendiri.</div>';
-    adaptEl.innerHTML = '';
+    listEl.dataset.key = '';
+    adaptEl.innerHTML = ''; adaptEl.dataset.key = '';
     return;
   }
+  const listKey = state.brewer + ':' + items.map(c=>c.id).join(',');
+  if(listEl.dataset.key===listKey){       // same recipes: just move the active highlight, keep the nodes
+    items.forEach((cr,i)=>{
+      const on = state.collection.id===cr.id, b = listEl.children[i];
+      if(b){ b.className = 'tab' + (on ? ' active' : ''); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+    });
+  } else {
+  listEl.innerHTML = ''; listEl.dataset.key = listKey;
   listEl.setAttribute('role','group');
   listEl.setAttribute('aria-label',"Resep Brewer's Collection");
   items.forEach(cr=>{
@@ -1093,10 +1106,28 @@ function renderCollectionBlock(){
     };
     listEl.appendChild(d);
   });
+  }
   const active = state.collection.id ? findCollectionRecipe(state.collection.id) : null;
-  if(!active || active.brewer !== state.brewer){ adaptEl.innerHTML=''; return; }
+  if(!active || active.brewer !== state.brewer){ adaptEl.innerHTML=''; adaptEl.dataset.key = ''; return; }
   const o = active.original;
   const adapted = !!state.collection.adapted;
+  // The adaptation panel (which holds the dose / temperature sliders) is only rebuilt when its STRUCTURE changes
+  // (different recipe, Original <-> Sesuaikan, available adjustments). Slider drags only refresh live values in place,
+  // so the <input> being dragged is never destroyed.
+  const adaptKey = [active.id, adapted?1:0, active.allowDoseAdapt?1:0, active.allowTempAdapt?1:0, active.allowGrindAdapt?1:0].join('|');
+  if(adaptEl.dataset.key===adaptKey){
+    const curDoseL = state.collection.dose!=null ? state.collection.dose : o.dose;
+    const baseTempL = o.tempNumber!=null ? o.tempNumber : 92;
+    const curTempL = state.collection.temp!=null ? state.collection.temp : baseTempL;
+    const curGrindL = state.collection.grind!=null ? state.collection.grind : o.grindText;
+    const dn = adaptEl.querySelector('[data-live="dose-num"]'); if(dn) dn.textContent = curDoseL;
+    const ds = adaptEl.querySelector('[data-live="dose-slider"]'); if(ds) setRange(ds, undefined, undefined, curDoseL);
+    const tn = adaptEl.querySelector('[data-live="temp-num"]'); if(tn) tn.textContent = curTempL;
+    const ts = adaptEl.querySelector('[data-live="temp-slider"]'); if(ts) setRange(ts, undefined, undefined, curTempL);
+    adaptEl.querySelectorAll('[data-live="grind-chip"]').forEach((chip,i)=>{ chip.className = 'chip' + (curGrindL===GRIND_STEPS[i] ? ' active' : ''); });
+    return;
+  }
+  adaptEl.dataset.key = adaptKey;
   adaptEl.innerHTML = '';
   const wrap = document.createElement('div');
   wrap.style.marginTop = '14px';
@@ -1140,10 +1171,13 @@ function renderCollectionBlock(){
       doseRow.className = 'panel-block';
       doseRow.style.padding='10px 0';
       const curDose = state.collection.dose!=null ? state.collection.dose : o.dose;
-      doseRow.innerHTML = `<div class="section-heading">Dosis kopi (disesuaikan)</div><div class="big-display"><span class="big-num">${curDose}</span><span class="big-unit">gram</span></div>`;
+      doseRow.innerHTML = `<div class="section-heading">Dosis kopi (disesuaikan)</div><div class="big-display"><span class="big-num" data-live="dose-num">${curDose}</span><span class="big-unit">gram</span></div>`;
       const slider = document.createElement('input');
       slider.type='range'; slider.min=Math.max(5, Math.round(o.dose*0.5)); slider.max=Math.round(o.dose*1.6); slider.step=0.5; slider.value=curDose;
-      slider.addEventListener('input', e=>{ state.collection.dose = parseFloat(e.target.value); renderAll(); });
+      slider.setAttribute('data-live','dose-slider');
+      slider.setAttribute('aria-label','Dosis kopi (disesuaikan)');
+      const doseNumEl = doseRow.querySelector('[data-live="dose-num"]');
+      slider.addEventListener('input', e=>{ state.collection.dose = parseFloat(e.target.value); doseNumEl.textContent = state.collection.dose; scheduleLive(); });
       doseRow.appendChild(slider);
       const note = document.createElement('div');
       note.className='hint-box';
@@ -1158,10 +1192,13 @@ function renderCollectionBlock(){
       tempRow.style.padding='10px 0';
       const baseTemp = o.tempNumber!=null ? o.tempNumber : 92;
       const curTemp = state.collection.temp!=null ? state.collection.temp : baseTemp;
-      tempRow.innerHTML = `<div class="section-heading">Suhu air (disesuaikan)</div><div class="big-display"><span class="big-num">${curTemp}</span><span class="big-unit">°C</span></div>`;
+      tempRow.innerHTML = `<div class="section-heading">Suhu air (disesuaikan)</div><div class="big-display"><span class="big-num" data-live="temp-num">${curTemp}</span><span class="big-unit">°C</span></div>`;
       const slider = document.createElement('input');
       slider.type='range'; slider.min=75; slider.max=100; slider.step=1; slider.value=curTemp;
-      slider.addEventListener('input', e=>{ state.collection.temp = parseFloat(e.target.value); renderAll(); });
+      slider.setAttribute('data-live','temp-slider');
+      slider.setAttribute('aria-label','Suhu air (disesuaikan)');
+      const tempNumEl = tempRow.querySelector('[data-live="temp-num"]');
+      slider.addEventListener('input', e=>{ state.collection.temp = parseFloat(e.target.value); tempNumEl.textContent = state.collection.temp; scheduleLive(); });
       tempRow.appendChild(slider);
       const note = document.createElement('div');
       note.className='hint-box';
@@ -1183,6 +1220,7 @@ function renderCollectionBlock(){
       GRIND_STEPS.forEach(g=>{
         const chip = document.createElement('div');
         chip.className = 'chip' + (curGrind===g ? ' active' : '');
+        chip.setAttribute('data-live','grind-chip');
         chip.textContent = g;
         chip.onclick = ()=>{ state.collection.grind = g; renderAll(); };
         chipRow.appendChild(chip);
@@ -1316,22 +1354,24 @@ function renderDoseControls(){
   const dose = activeDose();
   const [lo, hi] = state.category==='custom' ? CUSTOM_DOSE_RANGE : RECOMMENDED_DOSE_RANGE;
   const slider = document.getElementById('doseSlider');
-  slider.min = lo; slider.max = hi;
+  setRange(slider, lo, hi, dose);
   document.getElementById('doseNum').textContent = dose;
-  slider.value = dose;
   const chipsEl = document.getElementById('doseChips');
-  chipsEl.innerHTML='';
-  [10,12,15].forEach(g=>{
-    const c = document.createElement('div');
-    c.className = 'chip' + (dose===g?' active':'');
-    c.textContent = g+' g';
-    c.onclick = ()=>{ setActiveDose(g); renderAll(); };
-    chipsEl.appendChild(c);
-  });
+  if(chipsEl.children.length!==3){          // structure never changes: build once, then only toggle the active state
+    chipsEl.innerHTML='';
+    [10,12,15].forEach(g=>{
+      const c = document.createElement('div');
+      c.textContent = g+' g';
+      c.onclick = ()=>{ setActiveDose(g); renderAll(); };
+      chipsEl.appendChild(c);
+    });
+  }
+  [10,12,15].forEach((g,i)=>{ chipsEl.children[i].className = 'chip' + (dose===g?' active':''); });
 }
 document.getElementById('doseSlider').addEventListener('input', e=>{
   setActiveDose(parseFloat(e.target.value));
-  renderAll();
+  document.getElementById('doseNum').textContent = activeDose();   // readout follows the thumb immediately
+  scheduleLive();
 });
 
 /* ============ RENDER: RATIO ============ */
@@ -1339,7 +1379,7 @@ function renderRatioControls(){
   const brewer = BREWERS[state.brewer];
   const [lo,hi] = brewer.ratioBounds;
   const slider = document.getElementById('ratioSlider');
-  slider.min = lo; slider.max = hi; slider.step = 0.5;
+  if(slider.step!=='0.5') slider.step = 0.5;
 
   // isLocked() — not a raw state.style check — is the single source of truth for "a Recommended
   // preset is actually governing these controls right now". state.style can be non-null while
@@ -1352,29 +1392,33 @@ function renderRatioControls(){
   // reference must never crash the recipe sheet).
   const presetObj = locked ? findStyle(state.style) : null;
   const activeRatio = presetObj ? presetObj.ratio : getManualRatio();
-  slider.value = activeRatio;
+  setRange(slider, lo, hi, activeRatio);
   document.getElementById('ratioNum').textContent = activeRatio;
 
   const chipsEl = document.getElementById('ratioPresetChips');
-  chipsEl.innerHTML='';
   const presets = [
     { label:'Pekat', val:+lo.toFixed(1) },
     { label:'Seimbang', val:+(((lo+hi)/2).toFixed(1)) },
     { label:'Ringan', val:+hi.toFixed(1) }
   ];
-  presets.forEach(p=>{
-    const c = document.createElement('div');
-    c.className = 'chip text' + (!locked && getManualRatio()===p.val ? ' active':'');
-    c.textContent = p.label;
-    c.onclick = ()=>{ state.manualRatio[state.brewer]=p.val; renderAll(); };
-    chipsEl.appendChild(c);
-  });
+  const chipKey = state.brewer + ':' + lo + ':' + hi;
+  if(chipsEl.dataset.key!==chipKey || chipsEl.children.length!==3){   // rebuild only when the bounds (brewer) change
+    chipsEl.innerHTML=''; chipsEl.dataset.key = chipKey;
+    presets.forEach(p=>{
+      const c = document.createElement('div');
+      c.textContent = p.label;
+      c.onclick = ()=>{ state.manualRatio[state.brewer]=p.val; renderAll(); };
+      chipsEl.appendChild(c);
+    });
+  }
+  presets.forEach((p,i)=>{ chipsEl.children[i].className = 'chip text' + (!locked && getManualRatio()===p.val ? ' active':''); });
 
   document.getElementById('ratioHint').style.display = locked ? 'none' : 'block';
 }
 document.getElementById('ratioSlider').addEventListener('input', e=>{
   state.manualRatio[state.brewer] = parseFloat(e.target.value);
-  renderAll();
+  document.getElementById('ratioNum').textContent = state.manualRatio[state.brewer];
+  scheduleLive();
 });
 
 function toggleHowto(){
@@ -1829,13 +1873,13 @@ function renderBloomSlider(r){
   }
   block.style.display = '';
   const slider = document.getElementById('bloomSlider');
-  slider.max = r.bloomMax;
-  slider.value = r.bloomWater;
+  setRange(slider, undefined, r.bloomMax, r.bloomWater);
   document.getElementById('bloomNum').textContent = r.bloomWater;
 }
 document.getElementById('bloomSlider').addEventListener('input', e=>{
   state.bloomManual[state.brewer] = parseFloat(e.target.value);
-  renderAll();
+  document.getElementById('bloomNum').textContent = state.bloomManual[state.brewer];
+  scheduleLive();
 });
 
 function renderTempSlider(r){
@@ -1854,14 +1898,14 @@ function renderTempSlider(r){
     const ref = getTempRef(state.brewer);
     [lo,hi] = TEMP_REFS[ref].range;
   }
-  slider.min = lo; slider.max = hi;
-  slider.value = r.temp;
+  setRange(slider, lo, hi, r.temp);
   document.getElementById('tempNum').textContent = r.temp;
   renderTempRefChips(r, locked);
 }
 document.getElementById('tempSlider').addEventListener('input', e=>{
   state.tempManual[state.brewer] = parseFloat(e.target.value);
-  renderAll();
+  document.getElementById('tempNum').textContent = state.tempManual[state.brewer];
+  scheduleLive();
 });
 function renderTempRefChips(r, locked){
   const wrap = document.getElementById('tempRefChips');
@@ -1872,14 +1916,17 @@ function renderTempRefChips(r, locked){
     return;
   }
   const ref = getTempRef(state.brewer);
-  wrap.innerHTML = '';
-  Object.keys(TEMP_REFS).forEach(key=>{
-    const d = document.createElement('div');
-    d.className = 'chip text' + (ref===key?' active':'');
-    d.textContent = TEMP_REFS[key].label;
-    d.onclick = ()=> setTempRef(key);
-    wrap.appendChild(d);
-  });
+  const keys = Object.keys(TEMP_REFS);
+  if(wrap.dataset.key!=='U' || wrap.children.length!==keys.length){   // constant structure: build once
+    wrap.innerHTML = ''; wrap.dataset.key = 'U';
+    keys.forEach(key=>{
+      const d = document.createElement('div');
+      d.textContent = TEMP_REFS[key].label;
+      d.onclick = ()=> setTempRef(key);
+      wrap.appendChild(d);
+    });
+  }
+  keys.forEach((key,i)=>{ wrap.children[i].className = 'chip text' + (ref===key?' active':''); });
   srcEl.textContent = 'Sumber: ' + TEMP_REFS[ref].source;
 }
 
@@ -1893,14 +1940,16 @@ function renderPourPlan(r){
   const pcChipsRow = document.getElementById('pourCountChips');
   pcChipsRow.style.display = locked ? 'none' : '';
   if(!locked){
-    pcChipsRow.innerHTML='';
-    [2,3,4].forEach(n=>{
-      const c = document.createElement('div');
-      c.className='chip' + (r.pourCount===n?' active':'');
-      c.textContent = n+' Tuangan';
-      c.onclick = ()=>{ state.pourCount=n; state.pourManual={}; renderAll(); };
-      pcChipsRow.appendChild(c);
-    });
+    if(pcChipsRow.children.length!==3){
+      pcChipsRow.innerHTML='';
+      [2,3,4].forEach(n=>{
+        const c = document.createElement('div');
+        c.textContent = n+' Tuangan';
+        c.onclick = ()=>{ state.pourCount=n; state.pourManual={}; renderAll(); };
+        pcChipsRow.appendChild(c);
+      });
+    }
+    [2,3,4].forEach((n,i)=>{ pcChipsRow.children[i].className = 'chip' + (r.pourCount===n?' active':''); });
   }
 
   const wrap = document.getElementById('pourManualWrap');
@@ -1923,8 +1972,10 @@ function renderPourPlan(r){
     });
     wrap.querySelectorAll('input[type=range]').forEach(inp=>{
       inp.addEventListener('input', e=>{
-        state.pourManual[parseInt(e.target.dataset.pourIdx)] = parseFloat(e.target.value);
-        renderAll();
+        const i = parseInt(e.target.dataset.pourIdx);
+        state.pourManual[i] = parseFloat(e.target.value);
+        const v = document.getElementById('pour-val-'+i); if(v) v.textContent = state.pourManual[i]+' g';
+        scheduleLive();
       });
     });
   } else {
@@ -1934,9 +1985,7 @@ function renderPourPlan(r){
         document.getElementById('pour-readout-'+i).textContent = amt+' g';
       } else {
         const slider = document.getElementById('pour-slider-'+i);
-        slider.min = MIN_POUR_G;
-        slider.max = r.pourMaxAllowed[i];
-        if(document.activeElement !== slider) slider.value = amt; // don't fight the slider the user is actively dragging
+        setRange(slider, MIN_POUR_G, r.pourMaxAllowed[i], amt);   // never fights the slider being dragged
         document.getElementById('pour-val-'+i).textContent = amt+' g';
       }
     });
@@ -2113,16 +2162,48 @@ function toggleEdu(){ document.getElementById('eduItem').classList.toggle('open'
 
 /* ============ MASTER RENDER ============ */
 let lastRecipe = null;
-function renderAll(){
+/* ============ SLIDER RESPONSIVENESS ============
+   Slider 'input' events fire at touch-move rate. They now (1) update state and the slider's own readout at once,
+   then (2) coalesce ONE light re-render per animation frame (renderAll({live:true})), which never recreates controls
+   whose structure has not changed - so the dragged <input> node is never destroyed and pointer capture / focus survive.
+   The thumb itself is native and is never debounced. */
+let activeRange = null, livePending = false, liveRaf = 0;
+const raf = (f)=> (window.requestAnimationFrame ? window.requestAnimationFrame(f) : setTimeout(f,16));
+function scheduleLive(){
+  if(livePending) return;
+  livePending = true;
+  liveRaf = raf(()=>{ if(livePending){ livePending = false; renderAll({live:true}); } });
+}
+function flushLive(){ if(livePending){ livePending = false; renderAll({live:true}); } }   // a stale rAF then finds livePending=false and does nothing
+function setRange(slider, min, max, value){        // write only what changed; never fight the thumb being dragged
+  if(min!==undefined && slider.min!==String(min)) slider.min = min;
+  if(max!==undefined && slider.max!==String(max)) slider.max = max;
+  if(slider!==activeRange && slider.value!==String(value)) slider.value = value;
+}
+function bindRangeTracking(){
+  document.addEventListener('pointerdown', e=>{ const t=e.target; if(t && t.tagName==='INPUT' && t.type==='range') activeRange = t; }, true);
+  const release = ()=>{ if(activeRange){ activeRange = null; } flushLive(); };
+  document.addEventListener('pointerup', release, true);
+  document.addEventListener('pointercancel', release, true);
+  document.addEventListener('change', e=>{ const t=e.target; if(t && t.tagName==='INPUT' && t.type==='range'){ activeRange = null; renderAll({live:true}); } }, true);
+  window.addEventListener('blur', ()=>{ activeRange = null; });
+}
+bindRangeTracking();
+
+function renderAll(opts){
+  const live = !!(opts && opts.live);
+  livePending = false;
+  if(!live){
   renderBrewerTabs();
   renderDrinkSeg();
   renderIcePlacement();
   renderCategoryTabs();
   renderCategoryVisibility();
   renderCustomSeedBlock();
+  }
   renderDoseControls();
   renderRatioControls();
-  renderStyleTabs();
+  if(!live) renderStyleTabs();
   renderCollectionBlock();
   const r = buildRecipe();
   lastRecipe = r;
