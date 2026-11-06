@@ -138,6 +138,56 @@
   .seo-info li{ margin:4px 0; }
   .seo-info strong{ color:var(--ink); }
 
+  /* BREWING TIMER (Phase 3) */
+  .bt{ margin:0 0 18px; border:1.5px solid var(--soft-purple); border-radius:var(--radius); padding:14px; background:#fff; box-sizing:border-box; }
+  .bt-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .bt-title{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink); }
+  .bt-tools{ display:flex; gap:6px; flex-wrap:wrap; }
+  .bt-btn{ font-family:'Inter',sans-serif; font-weight:700; font-size:13.5px; border-radius:var(--radius); padding:10px 14px; min-height:44px; cursor:pointer; border:1.5px solid var(--purple); background:#fff; color:var(--purple); box-sizing:border-box; min-width:0; }
+  .bt-btn:hover{ background:var(--lav-bg); }
+  .bt-btn.primary{ background:var(--purple); color:#fff; }
+  .bt-btn.primary:hover{ background:var(--purple-deep); border-color:var(--purple-deep); }
+  .bt-btn[hidden]{ display:none; }
+  .bt-btn.bt-tool{ font-size:12px; padding:6px 10px; font-weight:600; }
+  .bt-btn.bt-link{ border:0; background:none; padding:2px 0; min-height:0; font-size:12.5px; font-weight:600; text-decoration:underline; text-underline-offset:2px; }
+  .bt-btn:focus-visible{ outline:2px solid var(--purple-deep); outline-offset:2px; }
+  .bt-stage{ border:1.5px solid var(--border); border-radius:var(--radius); padding:14px; text-align:center; background:var(--lav-bg); color:var(--ink); }
+  .bt-state{ display:inline-block; font-size:13px; font-weight:800; letter-spacing:0.06em; padding:5px 12px; border-radius:20px; background:#fff; border:1.5px solid var(--purple); color:var(--purple-deep); }
+  .bt-clock{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:56px; line-height:1.1; margin:10px 0 4px; color:var(--purple-deep); letter-spacing:0.02em; }
+  .bt-step{ font-size:17px; font-weight:800; margin-bottom:4px; overflow-wrap:anywhere; }
+  .bt-instr{ font-size:14px; line-height:1.5; margin-bottom:6px; overflow-wrap:anywhere; }
+  .bt-water{ font-size:14px; font-weight:700; color:var(--purple-deep); margin-bottom:6px; overflow-wrap:anywhere; }
+  .bt-next{ font-size:12.5px; color:var(--muted); line-height:1.5; overflow-wrap:anywhere; }
+  .bt-stage[data-kind="pour"] .bt-state, .bt-stage[data-kind="bypass"] .bt-state{ background:var(--purple); color:#fff; }
+  .bt-stage[data-kind="pour"], .bt-stage[data-kind="bypass"]{ border-color:var(--purple); background:var(--selected-lav); }
+  .bt-stage[data-kind="swirl"] .bt-state, .bt-stage[data-kind="stir"] .bt-state, .bt-stage[data-kind="press"] .bt-state, .bt-stage[data-kind="plunger"] .bt-state, .bt-stage[data-kind="flip"] .bt-state, .bt-stage[data-kind="skim"] .bt-state, .bt-stage[data-kind="ice"] .bt-state{ border-style:dashed; border-width:2px; }
+  .bt-stage[data-kind="wait"] .bt-state, .bt-stage[data-kind="settle"] .bt-state, .bt-stage[data-kind="steep"] .bt-state, .bt-stage[data-kind="drawdown"] .bt-state, .bt-stage[data-kind="paused"] .bt-state{ background:#fff; color:var(--muted); border-color:var(--soft-purple); }
+  .bt-stage[data-kind="check"] .bt-state, .bt-stage[data-kind="complete"] .bt-state{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .bt-stage.bt-hl{ box-shadow:0 0 0 3px var(--purple); animation:btGlow 1.4s ease-out 1; }
+  @keyframes btGlow{ 0%{ box-shadow:0 0 0 6px var(--purple); } 100%{ box-shadow:0 0 0 3px var(--soft-purple); } }
+  .bt-progress{ height:6px; background:var(--selected-lav); border-radius:3px; margin:12px 0 6px; overflow:hidden; }
+  .bt-bar{ height:100%; width:0; background:var(--purple); transition:width .25s linear; }
+  .bt-stepno{ font-size:12px; color:var(--muted); margin-bottom:12px; }
+  .bt-controls{ display:flex; gap:8px; flex-wrap:wrap; }
+  .bt-controls .bt-btn{ flex:1 1 130px; }
+  .bt-notice{ margin-top:12px; font-size:12.5px; line-height:1.5; color:var(--ink); background:var(--lav-bg); border:1px solid var(--soft-purple); border-radius:var(--radius); padding:10px 12px; }
+  .bt-notice[hidden], .bt-note[hidden]{ display:none; }
+  .bt-note{ margin-top:10px; font-size:11.5px; line-height:1.5; color:var(--muted); }
+  .bt-bar-fixed{ position:fixed; left:10px; right:10px; bottom:10px; z-index:55; max-width:560px; margin:0 auto; display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid var(--purple); border-radius:var(--radius); padding:6px 8px; box-shadow:0 6px 20px rgba(0,0,0,0.14); box-sizing:border-box; }
+  .bt-bar-fixed[hidden]{ display:none; }
+  .bt-bf-clock{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:20px; color:var(--purple-deep); flex:0 0 auto; }
+  .bt-bf-mid{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:flex-start; text-align:left; background:none; border:0; padding:2px 0; cursor:pointer; font-family:'Inter',sans-serif; color:var(--ink); min-height:44px; justify-content:center; }
+  .bt-bf-state{ font-size:11px; font-weight:800; letter-spacing:0.05em; color:var(--purple); }
+  .bt-bf-step{ font-size:12.5px; font-weight:600; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bt-bf-btn{ font-family:'Inter',sans-serif; font-weight:700; font-size:12px; border-radius:var(--radius); border:1.5px solid var(--purple); background:#fff; color:var(--purple); min-height:44px; min-width:44px; padding:0 10px; cursor:pointer; flex:0 0 auto; }
+  .bt-bf-btn[hidden]{ display:none; }
+  body.bt-bar-on .app{ padding-bottom:140px; }
+  @media (max-width:360px){ .bt-clock{ font-size:48px; } .bt{ padding:12px; } }
+  @media (prefers-reduced-motion: reduce){
+    .bt-stage.bt-hl{ animation:none; }
+    .bt-bar{ transition:none; }
+  }
+
   /* SEGMENTED */
   .segmented{ display:flex; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; width:max-content; }
   .seg-opt{
@@ -1584,7 +1634,7 @@ function buildRecipe(){
     brewTime = fmtTime(pourEndSec + ddLo) + '–' + fmtTime(pourEndSec + ddHi);
   }
 
-  return { brewer, name, dose, ratio, ratioHotDisplay, ratioTotalDisplay, totalWater, hotWater, iceGrams, retention, estYield, iceMeltPct: Math.round(ICE_MELT_ASSUMED*100), temp, tempRef: styleObj ? null : getTempRef(state.brewer), grind, bloomWater, autoBloom, bloomMax, table: built.rows, pourEndTime: built.pourEndTime, isIced, pourCount: pourPlan?pourPlan.length:null, pourPlan, pourLeftBefore, pourMaxAllowed, brewTime, tips, recipeReason, isCustom: !styleObj };
+  return { brewer, name, dose, ratio, ratioHotDisplay, ratioTotalDisplay, totalWater, hotWater, iceGrams, retention, estYield, iceMeltPct: Math.round(ICE_MELT_ASSUMED*100), temp, tempRef: styleObj ? null : getTempRef(state.brewer), grind, bloomWater, autoBloom, bloomMax, table: built.rows, pourEndTime: built.pourEndTime, timeline: built.timeline, timing, icePlacement: state.icePlacement, isIced, pourCount: pourPlan?pourPlan.length:null, pourPlan, pourLeftBefore, pourMaxAllowed, brewTime, tips, recipeReason, isCustom: !styleObj };
 }
 
 /* ============ BREWER'S COLLECTION — RECIPE COMPUTE ============
@@ -1616,7 +1666,7 @@ function buildCollectionRecipe(cr){
   const effectiveGrind = (adapted && state.collection.grind!=null) ? state.collection.grind : o.grindText;
   const doseChanged = effectiveDose !== o.dose;
 
-  let table = [], pourEndTime = null, totalWater, brewWater = null, bypassWater = null;
+  let table = [], pourEndTime = null, totalWater, brewWater = null, bypassWater = null, collectionTimerSteps = [];
   if(cr.kind==='pourover'){
     // Only steps explicitly marked as actual water additions (pour!==false — Bloom and each
     // numbered pour) are water-adding events. Non-pouring actions (Swirl, Stir, etc.) share the
@@ -1640,6 +1690,7 @@ function buildCollectionRecipe(cr){
       });
     }
     let prevTotal = 0;
+    collectionTimerSteps = scaledSteps;
     table = scaledSteps.map(s=>{
       const add = s.pour===false ? 0 : (s.total - prevTotal);
       if(s.pour!==false) prevTotal = s.total;
@@ -1656,6 +1707,7 @@ function buildCollectionRecipe(cr){
     // one combined number that would imply all of it passed through the coffee.
     const scaledSteps = doseChanged ? scaleActionSteps(o.steps, o.dose, effectiveDose) : o.steps.map(s=>({...s}));
     let cum = 0; brewWater = 0; bypassWater = 0;
+    collectionTimerSteps = scaledSteps;
     table = scaledSteps.map(s=>{
       if(s.grams!==undefined){
         cum += s.grams;
@@ -1683,7 +1735,7 @@ function buildCollectionRecipe(cr){
     retention:null, estYield:null, iceMeltPct:null,
     temp: effectiveTempNumber, tempText: effectiveTempText, tempRef:null, grind: effectiveGrind,
     bloomWater:0, autoBloom:0, bloomMax:0,
-    table, pourEndTime,
+    table, pourEndTime, timerSteps: collectionTimerSteps, collectionKind: cr.kind,
     pourCount:null, pourPlan:null, pourLeftBefore:null, pourMaxAllowed:null,
     brewTime: o.totalTimeText, tips:null, recipeReason:null, isCustom:false,
     category:'collection',
@@ -1708,6 +1760,7 @@ function buildCollectionRecipe(cr){
 function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIced, brewTime, icePlacement, timing){
   const rows = [];
   let pourEndTime = null;
+  const timeline = []; // read-only description of the same schedule, consumed by the Brewing Timer
   if(brewer.family==='pourover'){
     if(isIced && icePlacement==='start'){
       rows.push({step:'Taruh Es & Tare Timbangan', time:'00:00', add:iceGrams+' g', total:'0 g (tare)'});
@@ -1722,6 +1775,7 @@ function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIc
       } else {
         t = (timing && timing.bloomSec!==undefined) ? timing.bloomSec : 40;
       }
+      timeline.push({ kind:'bloom', start:0, pourSec:(timing && timing.bloomPourSec!==undefined) ? timing.bloomPourSec : null, nextStart:t, add:bloomWater, cum });
     }
     pourPlan.forEach((amt,i)=>{
       const isLast = i===pourPlan.length-1;
@@ -1730,6 +1784,7 @@ function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIc
       rows.push({step:label, time:fmtTime(t), add:amt+' g', total:cum+' g'});
       const dur = timing && timing.pourSec && timing.pourSec[i]!==undefined ? timing.pourSec[i] : 35;
       const gap = timing && timing.gapSec && timing.gapSec[i]!==undefined ? timing.gapSec[i] : 0;
+      timeline.push({ kind:'pour', label, start:t, dur, gap:isLast?0:gap, add:amt, cum, last:isLast });
       t = t + dur; // the moment pouring for this step actually stops
       if(isLast) pourEndTime = fmtTime(t);
       if(!isLast) t += gap; // rest before the next pour starts — kept in the schedule, just not shown as its own row
@@ -1754,7 +1809,7 @@ function buildTable(brewer, dose, hotWater, bloomWater, iceGrams, pourPlan, isIc
     rows.push({step:'Tekan', time:'—', add:'—', total:hotWater+' g'});
     if(isIced) rows.push({step:'Tekan ke Es', time:'—', add:iceGrams+' g', total:(hotWater+iceGrams)+' g'});
   }
-  return { rows, pourEndTime };
+  return { rows, pourEndTime, timeline };
 }
 function fmtTime(sec){
   const m = Math.floor(sec/60), s = sec%60;
@@ -1941,6 +1996,8 @@ function renderCollectionSheet(r){
       <tbody>${tableRows}</tbody>
     </table>
 
+    <div id="brewTimerSlot"></div>
+
     <div class="hint-box"><b>Sumber:</b> <a href="${m.sourceUrl}" target="_blank" rel="noopener" style="color:var(--purple);">${m.sourceLabel}</a><br><span style="opacity:.75;">${m.verifiedNote}</span></div>
 
     <div class="ts-block">
@@ -2012,6 +2069,8 @@ function renderSheet(r){
       <tbody>${tableRows}</tbody>
     </table>
 
+    <div id="brewTimerSlot"></div>
+
     <div class="tips-box"><b>Tips:</b> ${r.tips}</div>
 
     ${r.isCustom ? `
@@ -2072,6 +2131,7 @@ function renderAll(){
   renderPourPlan(r);
   renderPresetStatus(r);
   renderSheet(r);
+  BrewTimer.afterRender(r); // timer reads the finished recipe; it never writes to state
 }
 function resetAll(){
   // "Mulai resep baru" returns to the same real, actual starting recipe as a brand-new session
@@ -2268,6 +2328,627 @@ function deleteSaved(id){
   setSaved(getSaved().filter(x=>x.id!==id));
   openSaved();
 }
+
+/* ============ BREWING TIMER (Phase 3) ============
+   Three layers, deliberately separate from the calculation engine (nothing here writes to `state`
+   or to any recipe object — it only READS the recipe that buildRecipe() already produced):
+   1. buildTimerSchedule(r)  — turns a finished recipe into a normalized, frozen list of steps.
+   2. createTimerEngine(env) — a small state machine driven by a monotonic clock (no DOM, no audio).
+   3. BrewTimer              — the UI, Web Audio tones and vibration wired onto the engine.
+   Everything is client-side; nothing is sent anywhere. */
+
+// Only used for Dripnesia's OWN presets/custom recipes, where the data defines when a pour starts but
+// not how long it takes. It decides when the on-screen label moves on (POUR NOW -> WAIT/STEEP), nothing
+// else. Brewer's Collection recipes never use it: their untimed actions stay manual.
+const TIMER_ASSUMED_POUR_SEC = 10;
+const TIMER_PRE_WARN_SEC = 5;    // one short "get ready" tone this long before a scheduled action
+const TIMER_MIN_PRE_GAP_SEC = 8; // no get-ready tone when the previous action started less than this ago
+const TIMER_LATE_SEC = 2;        // a cue more than this late is shown but never sounded (no stale alarms)
+
+const TIMER_ACTION_TYPES = ['pour','bypass','ice','swirl','stir','skim','press','plunger','flip','setup'];
+const TIMER_STATE_LABEL = {
+  pour:'POUR NOW', bypass:'POUR NOW', wait:'WAIT', settle:'WAIT', swirl:'SWIRL / STIR', stir:'SWIRL / STIR',
+  steep:'STEEP', press:'PRESS', plunger:'PLUNGER', drawdown:'DRAWDOWN', check:'CHECK BREW',
+  setup:'PREP', flip:'FLIP', skim:'SKIM', cool:'COOL', ice:'ICE'
+};
+
+// Source-backed durations for Brewer's Collection steps whose source text states one explicitly.
+// (Hoffmann French Press: "Tuang semua air sekaligus ... ±10 detik".) Nothing else is invented.
+const COLLECTION_TIMER_HINTS = {
+  'hoffmann-frenchpress': { 'Tuang Air': { durationSec:10 } }
+};
+
+function timerClock(sec){ return fmtTime(Math.max(0, Math.round(sec))); }
+
+/* ---- 1. schedule normalization ---- */
+function timerStepBase(o){
+  return Object.assign({ id:'', type:'wait', label:'', instruction:'', water:null, startSec:null, endSec:null,
+    durationSec:null, afterPrev:false, manual:false, estimated:false, approximate:false, assumed:false, rangeText:null }, o);
+}
+function parseCollectionTime(text){
+  // '00:00' -> start; '00:00–04:00' -> start+end; '04:00–±09:00' -> approximate end; '±09:00–12:00' -> approximate start;
+  // '—' / 'setelah tekan' -> no time at all (never guessed).
+  const out = { start:null, end:null, approxStart:false, approxEnd:false };
+  if(!text || !/\d+:\d+/.test(text)) return out;
+  const parts = text.split('–');
+  const one = (s)=>{ const m = /(±)?\s*(\d+):(\d+)/.exec(s); return m ? { sec:parseInt(m[2],10)*60+parseInt(m[3],10), approx:!!m[1] } : null; };
+  const a = one(parts[0]), b = parts[1] ? one(parts[1]) : null;
+  if(a){ out.start = a.sec; out.approxStart = a.approx; }
+  if(b){ out.end = b.sec; out.approxEnd = b.approx; }
+  return out;
+}
+function collectionActionType(label){
+  const l = label.toLowerCase();
+  if(/bypass/.test(l)) return 'bypass';
+  if(/pasang plunger/.test(l)) return 'plunger';
+  if(/tekan|press/.test(l)) return 'press';
+  if(/balik/.test(l)) return 'press';
+  if(/aduk|stir|pecah/.test(l)) return 'stir';
+  if(/buang buih|skim/.test(l)) return 'skim';
+  if(/steep/.test(l)) return 'steep';
+  if(/endap|tunggu|rehat/.test(l)) return 'settle';
+  if(/dingin/.test(l)) return 'cool';
+  if(/pasang/.test(l)) return 'setup';
+  if(/tuang/.test(l)) return 'pour';
+  return 'wait';
+}
+function pouroverTimerSteps(r, push){
+  const b = r.brewer;
+  if(r.isIced && r.icePlacement==='start'){
+    push({ type:'setup', label:'Siapkan es', instruction:`Taruh ${r.iceGrams} g es di server, lalu tare timbangan ke 0.`, water:{ add:r.iceGrams, cumulative:null, kind:'ice' }, manual:true });
+  }
+  let lastPourEnd = null;
+  (r.timeline||[]).forEach(e=>{
+    if(e.kind==='bloom'){
+      const dur = e.pourSec!=null ? e.pourSec : TIMER_ASSUMED_POUR_SEC;
+      push({ type:'pour', label:'Bloom', isBloom:true, instruction:`Tuang ${e.add} g air untuk bloom — pastikan semua bubuk kopi basah.`, water:{ add:e.add, cumulative:e.cum, kind:'brew' }, startSec:0, durationSec:dur, assumed:e.pourSec==null });
+      if(e.nextStart > dur) push({ type:'wait', label:'Tunggu bloom', instruction:'Biarkan kopi mengembang (bloom). Belum perlu menuang.', afterPrev:true, endSec:e.nextStart });
+    } else {
+      push({ type:'pour', label:e.label, instruction:`Tuang air sampai timbangan menunjukkan ${e.cum} g (+${e.add} g).`, water:{ add:e.add, cumulative:e.cum, kind:'brew' }, startSec:e.start, durationSec:e.dur, assumed:false });
+      const end = e.start + e.dur;
+      if(e.last){ lastPourEnd = end; }
+      else if(e.gap>0) push({ type:'wait', label:'Tunggu', instruction:'Biarkan air turun sebentar sebelum tuangan berikutnya.', afterPrev:true, endSec:end+e.gap });
+    }
+  });
+  if(lastPourEnd!=null && b.drawdownRangeSec){
+    const lo = lastPourEnd + b.drawdownRangeSec[0], hi = lastPourEnd + b.drawdownRangeSec[1];
+    push({ type:'drawdown', label:'Drawdown', instruction:'Tuangan terakhir selesai. Tunggu sampai air menetes habis.', afterPrev:true, endSec:lo });
+    push({ type:'check', label:'Perkiraan seduhan selesai', instruction:`Perkiraan seduhan selesai (${timerClock(lo)}–${timerClock(hi)}). Cek apakah air sudah habis menetes.`, startSec:lo, estimated:true, manual:true, rangeText:`${timerClock(lo)}–${timerClock(hi)}` });
+  }
+  if(r.isIced && r.icePlacement==='end'){
+    push({ type:'ice', label:'Tuang ke es', instruction:`Tuang seduhan ke ${r.iceGrams} g es.`, water:{ add:r.iceGrams, cumulative:null, kind:'ice' }, manual:true });
+  }
+}
+function immersionTimerSteps(r, push){
+  const steepSec = parseTimeToSec(r.brewTime) || 240;
+  const rehat = /rehat\s+(\d+)\s*menit/i.exec(r.brewTime||'');
+  push({ type:'pour', label:'Tuang Air', instruction:`Tuang semua air (${r.hotWater} g) ke atas bubuk kopi, pastikan terbasahi merata.`, water:{ add:r.hotWater, cumulative:r.hotWater, kind:'brew' }, startSec:0, durationSec:TIMER_ASSUMED_POUR_SEC, assumed:true });
+  push({ type:'steep', label:'Steep', instruction:'Diamkan tanpa diaduk dan jangan ditekan dulu.', afterPrev:true, endSec:steepSec });
+  if(rehat){
+    push({ type:'stir', label:'Pecah crust', instruction:'Pecahkan lapisan atas (crust) dan buang ampas yang mengapung.', startSec:steepSec, manual:true });
+    push({ type:'settle', label:'Rehat', instruction:'Biarkan ampas mengendap. Jangan ditekan dulu.', afterPrev:true, durationSec:parseInt(rehat[1],10)*60 });
+    push({ type:'press', label:'Tekan Plunger', instruction:'Tekan plunger perlahan lalu tuang ke cangkir.', afterPrev:true, manual:true });
+  } else {
+    push({ type:'press', label:'Tekan Plunger', instruction:'Tekan plunger perlahan lalu tuang ke cangkir.', startSec:steepSec, manual:true });
+  }
+  if(r.isIced) push({ type:'ice', label:'Tuang ke es', instruction:`Tuang seduhan ke ${r.iceGrams} g es.`, water:{ add:r.iceGrams, cumulative:null, kind:'ice' }, manual:true });
+}
+function aeropressTimerSteps(r, push){
+  const bloomSec = (r.timing && r.timing.bloomSec!==undefined) ? r.timing.bloomSec : 30;
+  const range = String(r.brewTime||'').split('–');
+  const pressLo = parseTimeToSec(range[0]) || 90;
+  const pressHi = range[1] ? parseTimeToSec(range[1]) : null;
+  let mainStart = 0;
+  if(r.bloomWater>0){
+    push({ type:'pour', label:'Bloom', isBloom:true, instruction:`Tuang ${r.bloomWater} g air untuk bloom — pastikan semua bubuk kopi basah.`, water:{ add:r.bloomWater, cumulative:r.bloomWater, kind:'brew' }, startSec:0, durationSec:TIMER_ASSUMED_POUR_SEC, assumed:true });
+    push({ type:'wait', label:'Tunggu bloom', instruction:'Biarkan kopi mengembang (bloom). Belum perlu menuang.', afterPrev:true, endSec:bloomSec });
+    mainStart = bloomSec;
+  }
+  const mainAdd = r.hotWater - r.bloomWater;
+  push({ type:'pour', label: r.bloomWater>0 ? 'Tuang Utama' : 'Tuang Air', instruction:`Tuang air sampai timbangan menunjukkan ${r.hotWater} g (+${mainAdd} g).`, water:{ add:mainAdd, cumulative:r.hotWater, kind:'brew' }, startSec:mainStart, durationSec:TIMER_ASSUMED_POUR_SEC, assumed:true });
+  const steepEnd = Math.max(pressLo, mainStart + TIMER_ASSUMED_POUR_SEC + 5);
+  push({ type:'steep', label:'Steep', instruction:'Biarkan kopi terseduh sebelum ditekan.', afterPrev:true, endSec:steepEnd });
+  const rt = pressHi ? `${timerClock(pressLo)}–${timerClock(pressHi)}` : timerClock(pressLo);
+  push({ type:'press', label: r.isIced ? 'Tekan ke es' : 'Tekan', instruction: (r.isIced ? `Tekan perlahan ke atas ${r.iceGrams} g es.` : 'Tekan perlahan sampai terdengar desisan udara.') + ` Perkiraan waktu tekan: ${rt}.`, startSec:steepEnd, estimated:true, manual:true, rangeText:rt, water: r.isIced ? { add:r.iceGrams, cumulative:null, kind:'ice' } : null });
+}
+function collectionTimerSteps(r, push){
+  const src = r.timerSteps || [];
+  const hints = COLLECTION_TIMER_HINTS[r.collectionMeta.id] || {};
+  if(r.collectionKind==='pourover'){
+    let prevTotal = 0;
+    src.forEach(s=>{
+      const isPour = s.pour!==false;
+      const add = isPour ? s.total - prevTotal : 0;
+      if(isPour) prevTotal = s.total;
+      const type = isPour ? 'pour' : (/stir|aduk/i.test(s.label) ? 'stir' : 'swirl');
+      push({ type, label:s.label, isBloom:/bloom/i.test(s.label),
+        instruction: s.note || (isPour ? `Tuang air sampai timbangan menunjukkan ${s.total} g (+${add} g).` : s.label),
+        water: isPour ? { add, cumulative:s.total, kind:'brew' } : null, startSec:s.atSec });
+    });
+    // Source-stated estimate of when dripping ends (e.g. "~3:00"). Only an estimate, never a confirmed time.
+    const m = /^~?\s*(\d+):(\d+)/.exec(r.brewTime||'');
+    const last = src.length ? src[src.length-1].atSec : 0;
+    if(m){
+      const est = parseInt(m[1],10)*60 + parseInt(m[2],10);
+      if(est > last) push({ type:'check', label:'Perkiraan seduhan selesai', instruction:`Perkiraan seduhan selesai (sumber: ${r.brewTime}). Cek apakah air sudah habis menetes.`, startSec:est, estimated:true, manual:true, rangeText:timerClock(est) });
+    }
+    return;
+  }
+  // action-kind recipes (French Press, AeroPress with bypass): per-step times come straight from the source labels
+  let cum = 0;
+  src.forEach(s=>{
+    const tm = parseCollectionTime(s.time);
+    const type = collectionActionType(s.label);
+    let water = null;
+    if(s.grams!==undefined){ cum += s.grams; water = { add:s.grams, cumulative:cum, kind: s.waterType==='bypass' ? 'bypass' : 'brew' }; }
+    const hint = hints[s.label] || {};
+    push({ type, label:s.label, instruction:s.note || s.label, water,
+      startSec:tm.start, approximate:tm.approxStart, endSec:tm.end!=null ? tm.end : null,
+      durationSec: hint.durationSec!=null ? hint.durationSec : null });
+  });
+}
+function buildTimerSchedule(r){
+  if(!r || r.isEmpty || !r.brewer) return null;
+  const steps = [];
+  const push = (o)=>{ steps.push(timerStepBase(Object.assign({ id:'s'+(steps.length+1) }, o))); };
+  if(r.category==='collection') collectionTimerSteps(r, push);
+  else if(r.brewer.family==='pourover') pouroverTimerSteps(r, push);
+  else if(r.brewer.family==='immersion') immersionTimerSteps(r, push);
+  else if(r.brewer.family==='aeropress') aeropressTimerSteps(r, push);
+  if(!steps.length) return null;
+
+  // Normalization rules (applied to every source so the engine can never dead-end or invent a time):
+  // a step with no time, or one that shares/precedes the last absolute time already used, follows the
+  // previous step instead of getting an invented timestamp of its own.
+  let lastAbs = -1;
+  steps.forEach((s,i)=>{
+    if(s.startSec!=null){
+      if(i>0 && s.startSec<=lastAbs){ s.startSec = null; s.afterPrev = true; }
+      else lastAbs = s.startSec;
+    } else if(i>0){ s.afterPrev = true; }
+  });
+  // A step that cannot end by itself (no duration/end) and is followed by a step with no absolute time
+  // is ended by the user's confirmation ("Lanjut setelah selesai").
+  steps.forEach((s,i)=>{
+    const next = steps[i+1];
+    const selfEnds = s.durationSec!=null || s.endSec!=null;
+    if(next && next.startSec==null && !selfEnds) s.manual = true;
+  });
+  steps[steps.length-1].manual = true; // the final step always ends with the user's confirmation
+  // Leading untimed steps are "prep": done before the brewing clock starts.
+  let prep = 0;
+  while(prep<steps.length && steps[prep].startSec==null && steps[prep].type!=='pour') prep++;
+  if(prep>=steps.length) prep = 0;
+  for(let i=0;i<prep;i++){ steps[i].manual = true; steps[i].afterPrev = false; steps[i].prep = true; }
+
+  const total = r.category==='collection' ? r.totalWater : r.totalWater;
+  const sched = {
+    version:1,
+    label: `${r.brewer.name} · ${r.category==='collection' ? r.collectionMeta.title + (r.collectionMeta.status==='adapted' ? ' (Adaptasi)' : ' (Original)') : (r.isCustom ? 'Racikan Sendiri' : r.name)}`,
+    brewer:r.brewer.key, drink:r.isIced ? 'iced' : 'hot', category:r.category || (r.isCustom ? 'custom' : 'recommended'),
+    dose:r.dose, ratio:r.ratio, totalWater:total, brewWater:r.brewWater!=null ? r.brewWater : null, bypassWater:r.bypassWater!=null ? r.bypassWater : null,
+    prepCount:prep, steps
+  };
+  sched.signature = JSON.stringify([sched.brewer, sched.drink, sched.category, sched.dose, sched.totalWater,
+    steps.map(s=>[s.type, s.label, s.water, s.startSec, s.endSec, s.durationSec, s.afterPrev, s.manual])]);
+  return timerDeepFreeze(sched);
+}
+function timerDeepFreeze(o){
+  Object.getOwnPropertyNames(o).forEach(k=>{ const v = o[k]; if(v && typeof v==='object' && !Object.isFrozen(v)) timerDeepFreeze(v); });
+  return Object.freeze(o);
+}
+
+/* ---- 2. state machine on a monotonic clock ----
+   status: idle -> (prep) -> running <-> paused -> done.   reset() returns to idle from anywhere.
+   Elapsed time is always recomputed from the clock (base + now - t0), never accumulated tick by tick, so a
+   throttled or background tab simply catches up; it never plays a backlog of missed cues. */
+function createTimerEngine(env){
+  let snap = null, status = 'idle', base = 0, t0 = 0, idx = 0;
+  let starts = [], waiting = [], released = [], fired = {}, landedAt = 0;
+  const steps = ()=> snap ? snap.steps : [];
+  function elapsedMs(){ return status==='running' ? base + (env.now() - t0) : (status==='paused' || status==='done') ? base : 0; }
+  function elapsedSec(){ return elapsedMs()/1000; }
+  // When the step at index j begins by itself (null = only when the user confirms the step before it).
+  function dueAt(j){
+    const st = steps(), s = st[j], p = st[j-1];
+    if(!s || !p) return null;
+    // A manual step is only ever released by an explicit confirm(); no schedule can carry the timer past it.
+    if(p.manual && !released[j-1]) return null;
+    const cand = [];
+    if(s.startSec!=null) cand.push(s.startSec);
+    if(s.afterPrev && !p.manual && starts[j-1]!=null){
+      if(p.endSec!=null) cand.push(p.endSec);
+      else if(p.durationSec!=null) cand.push(starts[j-1] + p.durationSec);
+    }
+    return cand.length ? Math.max(Math.min.apply(null, cand), starts[j-1]!=null ? starts[j-1] : 0) : null;
+  }
+  function emit(kind, step){ try{ env.notify && env.notify(kind, step); }catch(e){} }
+  function change(){ try{ env.onChange && env.onChange(); }catch(e){} }
+  // Which cue (if any) a step earns when it begins. Only steps that need the user to DO something sound a transition;
+  // waiting stages (wait/steep/settle/drawdown/cool) stay visual. Reaching the check step is an ESTIMATE, not a confirmation.
+  function cueFor(step){
+    if(!step) return null;
+    if(step.type==='check') return 'estimate';
+    return TIMER_ACTION_TYPES.indexOf(step.type)>=0 ? 'go' : null;
+  }
+  function announce(step, kind){
+    if(!kind) return false;
+    const key = 'cue:'+step.id;
+    if(fired[key]) return false;
+    fired[key] = true; emit(kind, step); return true;
+  }
+  function begin(){ status = 'running'; base = 0; t0 = env.now(); starts[idx] = 0; landedAt = env.now(); const c = steps()[idx]; announce(c, cueFor(c)); }
+  function finish(){
+    const last = steps()[steps().length-1];
+    base = elapsedMs(); status = 'done'; landedAt = env.now();
+    emit('complete', last);                      // confirmed completion: always its own, distinct tone
+    change();
+  }
+  const api = {
+    start(snapshot){
+      api.reset(true);
+      snap = snapshot; idx = 0; starts = []; waiting = []; released = []; fired = {};
+      if(snap.prepCount>0){ status = 'prep'; landedAt = env.now(); change(); }
+      else begin();
+      change();
+    },
+    confirm(){
+      const st = steps();
+      if(status==='prep'){
+        if(idx+1 < snap.prepCount){ idx++; landedAt = env.now(); }
+        else { idx = snap.prepCount; begin(); }
+        change(); return true;
+      }
+      if(status!=='running') return false;
+      const cur = st[idx];
+      if(!cur.manual) return false;
+      if(released[idx]) return false;            // already confirmed: a second tap/call can never cause a second transition
+      const next = st[idx+1];
+      if(!next){ released[idx] = true; finish(); return true; }
+      const el = elapsedSec();
+      released[idx] = true;
+      if(next.startSec!=null && next.startSec > el){ waiting[idx] = true; }   // ready early: wait for the scheduled time (tick() moves on)
+      else { idx++; starts[idx] = el; landedAt = env.now(); announce(next, cueFor(next)); }   // time already passed: advance now, no replay of missed cues
+      change(); return true;
+    },
+    pause(){ if(status!=='running') return false; base = elapsedMs(); status = 'paused'; change(); return true; },
+    resume(){ if(status!=='paused') return false; t0 = env.now(); status = 'running'; change(); return true; },
+    reset(silent){ snap = null; status = 'idle'; base = 0; t0 = 0; idx = 0; starts = []; waiting = []; released = []; fired = {}; if(!silent) change(); },
+    tick(){
+      if(status!=='running') return;
+      const el = elapsedSec();
+      let landed = 0;
+      while(idx+1 < steps().length){
+        const due = dueAt(idx+1);
+        if(due==null || el < due) break;
+        idx++; starts[idx] = due; landed++;
+      }
+      let notified = false;
+      if(landed>0){
+        landedAt = env.now();
+        const cur = steps()[idx];
+        const late = el - starts[idx];
+        const key = 'cue:'+cur.id;
+        if(!fired[key]){
+          // Exactly one cue per real transition, and none if it is stale (tab was asleep / several steps skipped at once).
+          if(landed===1 && late<=TIMER_LATE_SEC) notified = announce(cur, cueFor(cur));
+          else fired[key] = true;
+        }
+      }
+      const nx = steps()[idx+1];
+      if(nx){
+        const due = dueAt(idx+1);
+        if(due!=null){
+          const key = 'pre:'+nx.id, warnAt = due - TIMER_PRE_WARN_SEC;
+          if(!fired[key] && el >= warnAt){
+            fired[key] = true;
+            // Heads-up only before steps that need the user to act (never before wait/steep/settle/drawdown/check).
+            if(!notified && TIMER_ACTION_TYPES.indexOf(nx.type)>=0 && el < due && (el - warnAt) <= TIMER_LATE_SEC && (due - starts[idx]) >= TIMER_MIN_PRE_GAP_SEC) emit('pre', nx);
+          }
+        }
+      }
+      if(landed>0) change();
+    },
+    view(){
+      const st = steps();
+      if(!snap) return { status:'idle' };
+      const el = elapsedSec();
+      const cur = st[idx] || null, nx = st[idx+1] || null;
+      let nextDue = null;
+      if(status==='running' || status==='paused') nextDue = dueAt(idx+1);
+      let frac = 0;
+      if(cur && starts[idx]!=null){
+        const len = cur.endSec!=null ? cur.endSec - starts[idx] : cur.durationSec;
+        if(len>0) frac = Math.max(0, Math.min(1, (el - starts[idx])/len));
+      }
+      const n = st.length;
+      const progress = status==='done' ? 1 : (status==='prep' || status==='idle') ? 0 : Math.min(1, (idx + frac)/n);
+      return { status, elapsedSec:el, idx, n, step:cur, next:nx, nextDueSec:nextDue,
+        countdownSec: nextDue!=null ? Math.max(0, Math.ceil(nextDue - el)) : null,
+        waitingForNext: !!waiting[idx] && nextDue!=null, progress, snap, landedAt,
+        inPrep: status==='prep', prepCount: snap.prepCount };
+    },
+    status(){ return status; },
+    snapshot(){ return snap; }
+  };
+  return api;
+}
+
+/* ---- 3. audio + vibration ---- */
+const BrewAudio = {
+  ctx:null, enabled:true, supported:true,
+  unlock(){
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC){ this.supported = false; return; }
+      if(!this.ctx) this.ctx = new AC();
+      if(this.ctx.state==='suspended' && this.ctx.resume){ this.ctx.resume().then(()=>BrewTimer.refreshNotes()).catch(()=>BrewTimer.refreshNotes()); }
+    }catch(e){ this.supported = false; }
+  },
+  ready(){ return !!(this.ctx && this.ctx.state==='running'); },
+  tone(freq, at, dur, gain){
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(freq, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(gain, at + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(at); o.stop(at + dur + 0.02);
+  },
+  play(kind, stepType){
+    if(!this.enabled || !this.ctx) return false;
+    if(this.ctx.state==='suspended' && this.ctx.resume){          // first cue right after the Start tap
+      this.ctx.resume().then(()=>this._play(kind, stepType)).catch(()=>{});
+      return false;
+    }
+    return this._play(kind, stepType);
+  },
+  _play(kind, stepType){
+    if(!this.ready()) return false;
+    try{
+      const t = this.ctx.currentTime + 0.02;
+      if(kind==='pre'){ this.tone(880, t, 0.10, 0.07); }
+      else if(kind==='estimate'){ this.tone(587.33, t, 0.14, 0.09); this.tone(739.99, t+0.18, 0.22, 0.09); }   // softer 2-note: "probably ready", not confirmed
+      else if(kind==='complete'){ this.tone(523.25, t, 0.16, 0.12); this.tone(659.25, t+0.18, 0.16, 0.12); this.tone(783.99, t+0.36, 0.34, 0.12); }
+      else { // go: two tones, pitch pattern tells the kind of action apart even without looking
+        const pour = stepType==='pour' || stepType==='bypass' || stepType==='ice';
+        const wait = stepType==='wait' || stepType==='settle' || stepType==='steep' || stepType==='drawdown';
+        const a = pour ? 660 : wait ? 880 : 740, b = pour ? 880 : wait ? 587 : 740;
+        this.tone(a, t, 0.14, 0.12); this.tone(b, t+0.2, 0.14, 0.12);
+      }
+      return true;
+    }catch(e){ return false; }
+  }
+};
+function brewVibrate(kind){
+  try{
+    if(!BrewTimer.vibrateOn || !('vibrate' in navigator)) return;
+    navigator.vibrate(kind==='pre' ? 40 : kind==='complete' ? [120,80,120] : kind==='estimate' ? [80,60,80] : 160);
+  }catch(e){}
+}
+
+/* ---- 4. UI ---- */
+const BrewTimer = (function(){
+  const engine = createTimerEngine({
+    now:()=>performance.now(),
+    notify:(kind, step)=>{ BrewAudio.play(kind, step && step.type); brewVibrate(kind); },
+    onChange:()=>render()
+  });
+  let root = null, els = {}, bar = null, barEls = {}, intervalId = null, hlTimer = null;
+  let currentRecipe = null, currentSchedule = null, lastShown = {}, observer = null, panelVisible = false, lastLanded = 0;
+  const api = { engine, vibrateOn:true };
+
+  function el(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text!==undefined) e.textContent = text; return e; }
+  function btn(text, cls, fn){ const b = el('button','bt-btn'+(cls?' '+cls:''),text); b.type='button'; b.addEventListener('click', fn); return b; }
+  function set(node, key, value, prop){
+    const k = key; if(lastShown[k]===value) return; lastShown[k] = value;
+    if(prop==='hidden') node.hidden = value; else node.textContent = value;
+  }
+
+  function build(){
+    root = el('div','bt'); root.id = 'brewTimer'; root.setAttribute('role','region'); root.setAttribute('aria-label','Timer seduh');
+    const head = el('div','bt-head');
+    head.appendChild(el('div','bt-title','Timer Seduh'));
+    const tools = el('div','bt-tools');
+    els.sound = btn('Sound: On','bt-tool', ()=>{
+      BrewAudio.enabled = !BrewAudio.enabled;
+      if(BrewAudio.enabled){ BrewAudio.unlock(); setTimeout(()=>BrewAudio.play('pre'), 60); }
+      refreshNotes(); render(true);
+    });
+    els.sound.setAttribute('aria-pressed','true');
+    els.vib = btn('Getar: On','bt-tool', ()=>{ api.vibrateOn = !api.vibrateOn; if(api.vibrateOn) brewVibrate('pre'); render(true); });
+    els.vib.setAttribute('aria-pressed','true');
+    if(!('vibrate' in navigator)) els.vib.hidden = true;
+    tools.appendChild(els.sound); tools.appendChild(els.vib); head.appendChild(tools);
+    root.appendChild(head);
+
+    els.stage = el('div','bt-stage');
+    els.state = el('div','bt-state','SIAP'); els.state.setAttribute('role','status'); els.state.setAttribute('aria-live','polite'); els.state.setAttribute('aria-atomic','true');
+    els.clock = el('div','bt-clock','00:00'); els.clock.setAttribute('role','timer'); els.clock.setAttribute('aria-live','off');
+    els.step = el('div','bt-step','');
+    els.instr = el('div','bt-instr','');
+    els.water = el('div','bt-water',''); els.water.hidden = true;
+    els.next = el('div','bt-next','');
+    [els.state, els.clock, els.step, els.instr, els.water, els.next].forEach(n=>els.stage.appendChild(n));
+    root.appendChild(els.stage);
+
+    const prog = el('div','bt-progress'); prog.setAttribute('role','progressbar'); prog.setAttribute('aria-valuemin','0'); prog.setAttribute('aria-valuemax','100'); prog.setAttribute('aria-label','Progres seduhan');
+    els.bar = el('div','bt-bar'); prog.appendChild(els.bar); els.prog = prog;
+    root.appendChild(prog);
+    els.stepNo = el('div','bt-stepno',''); root.appendChild(els.stepNo);
+
+    els.controls = el('div','bt-controls');
+    els.start = btn('Start Brewing','primary', ()=>start());
+    els.pause = btn('Pause','secondary', ()=>engine.pause());
+    els.resume = btn('Resume','primary', ()=>engine.resume());
+    els.confirm = btn('Lanjut setelah selesai','primary bt-confirm', ()=>engine.confirm());
+    els.reset = btn('Reset','secondary', ()=>reset());
+    [els.start, els.confirm, els.pause, els.resume, els.reset].forEach(b=>els.controls.appendChild(b));
+    root.appendChild(els.controls);
+
+    els.notice = el('div','bt-notice'); els.notice.hidden = true;
+    els.noticeText = el('span','',''); els.noticeBtn = btn('Reset untuk pakai resep baru','bt-link', ()=>reset());
+    els.notice.appendChild(els.noticeText); els.notice.appendChild(el('span','',' ')); els.notice.appendChild(els.noticeBtn);
+    root.appendChild(els.notice);
+    els.audioNote = el('div','bt-note',''); els.audioNote.hidden = true; root.appendChild(els.audioNote);
+    root.appendChild(el('div','bt-note','Suara dan getar tidak dijamin berbunyi saat layar terkunci atau tab di latar belakang — tetap ikuti petunjuk di layar.'));
+
+    // compact bar, shown only while brewing and only when the full timer is scrolled out of view
+    bar = el('div','bt-bar-fixed'); bar.hidden = true; bar.setAttribute('role','region'); bar.setAttribute('aria-label','Timer seduh ringkas');
+    barEls.clock = el('div','bt-bf-clock','00:00');
+    const mid = el('button','bt-bf-mid'); mid.type='button'; mid.setAttribute('aria-label','Kembali ke timer');
+    barEls.state = el('span','bt-bf-state',''); barEls.step = el('span','bt-bf-step','');
+    mid.appendChild(barEls.state); mid.appendChild(barEls.step);
+    mid.addEventListener('click', ()=>{ if(root.isConnected) root.scrollIntoView({ block:'center' }); });
+    barEls.toggle = btn('Pause','bt-bf-btn', ()=>{ engine.status()==='paused' ? engine.resume() : engine.pause(); });
+    barEls.reset = btn('Reset','bt-bf-btn', ()=>reset());
+    [barEls.clock, mid, barEls.toggle, barEls.reset].forEach(n=>bar.appendChild(n));
+    document.body.appendChild(bar);
+
+    if('IntersectionObserver' in window){
+      observer = new IntersectionObserver(entries=>{ panelVisible = entries.some(e=>e.isIntersecting); render(true); }, { threshold:0.15 });
+      observer.observe(root);
+    }
+  }
+
+  function start(){
+    BrewAudio.unlock();                        // unlocked by the explicit tap on Start Brewing
+    if(!currentSchedule) return;
+    engine.start(currentSchedule);             // the engine follows this frozen snapshot from here on
+    startLoop();
+    refreshNotes();
+  }
+  function reset(){
+    stopLoop();
+    engine.reset();
+    lastShown = {};
+    render(true);
+  }
+  function startLoop(){
+    stopLoop();
+    // One interval only; elapsed time is derived from performance.now(), so the interval merely redraws.
+    intervalId = setInterval(()=>{ engine.tick(); render(); }, 250);
+  }
+  function stopLoop(){ if(intervalId!==null){ clearInterval(intervalId); intervalId = null; } }
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden && engine.status()==='running'){ engine.tick(); render(true); }
+  });
+
+  function refreshNotes(){
+    if(!els.audioNote) return;
+    let msg = '';
+    if(!BrewAudio.supported) msg = 'Browser ini tidak mendukung suara — ikuti petunjuk di layar.';
+    else if(BrewAudio.enabled && BrewAudio.ctx && !BrewAudio.ready() && engine.status()!=='idle') msg = 'Suara diblokir browser. Ketuk Sound untuk mengaktifkan, atau ikuti petunjuk di layar.';
+    set(els.audioNote, 'audioNote', msg); els.audioNote.hidden = !msg;
+  }
+
+  function waterText(w){
+    if(!w) return '';
+    if(w.kind==='ice') return `Es: ${w.add} g`;
+    if(w.kind==='bypass') return `Air bypass: +${w.add} g (tidak melewati kopi)`;
+    return w.cumulative!=null ? `Target timbangan: ${w.cumulative} g (+${w.add} g)` : `Air: +${w.add} g`;
+  }
+
+  function render(force){
+    if(!root) return;
+    if(force) lastShown = {};
+    const v = engine.view();
+    const idle = v.status==='idle';
+    const running = v.status==='running', paused = v.status==='paused', prep = v.status==='prep', done = v.status==='done';
+    els.sound.textContent = BrewAudio.enabled ? 'Sound: On' : 'Sound: Off';
+    els.sound.setAttribute('aria-pressed', BrewAudio.enabled ? 'true' : 'false');
+    els.vib.textContent = api.vibrateOn ? 'Getar: On' : 'Getar: Off';
+    els.vib.setAttribute('aria-pressed', api.vibrateOn ? 'true' : 'false');
+
+    let stateText, stateKind, clock, stepText, instr, water = '', nextText = '', stepNo = '', notice = '';
+    if(idle){
+      const first = currentSchedule ? currentSchedule.steps[0] : null;
+      stateText = 'SIAP'; stateKind = 'idle'; clock = '00:00';
+      stepText = currentSchedule ? currentSchedule.label : 'Pilih resep untuk memakai timer.';
+      instr = first ? `Langkah pertama: ${first.label}. Timer tidak berbunyi sebelum kamu menekan Start Brewing.` : '';
+      stepNo = currentSchedule ? `${currentSchedule.steps.length} langkah` : '';
+    } else {
+      const s = v.step, snap = v.snap;
+      const typeLabel = s ? (TIMER_STATE_LABEL[s.type] || 'LANGKAH') : '';
+      clock = timerClock(v.elapsedSec);
+      stepText = s ? s.label : '';
+      instr = s ? s.instruction : '';
+      water = s && s.water ? waterText(s.water) : '';
+      if(done){ stateText = 'BREW COMPLETE'; stateKind = 'complete'; stepText = 'Seduhan selesai'; instr = 'Seduhan dikonfirmasi selesai. Selamat menikmati!'; water = ''; }
+      else if(paused){ stateText = 'PAUSED'; stateKind = 'paused'; }
+      else if(v.waitingForNext){ stateText = 'WAIT'; stateKind = 'wait'; instr = `Siap. ${v.next.label} dimulai pukul ${timerClock(v.nextDueSec)}.`; water = ''; }
+      else { stateText = typeLabel; stateKind = s ? s.type : 'wait'; if(s && s.approximate) instr += ' (waktu perkiraan dari sumber)'; }
+      if(prep){ clock = '00:00'; instr = (s ? s.instruction : '') + ' Timer mulai berjalan setelah kamu menekan "Lanjut setelah selesai".'; }
+      if(!done){
+        if(v.next){
+          const t = v.countdownSec!=null ? ` · dalam ${timerClock(v.countdownSec)} (pukul ${timerClock(v.nextDueSec)})` : ' · setelah kamu selesai';
+          nextText = `Berikutnya: ${v.next.label}${v.next.approximate ? ' (perkiraan)' : ''}${t}`;
+        } else nextText = 'Langkah terakhir.';
+        if(s && s.estimated && s.rangeText && !prep) nextText = `Perkiraan, bukan konfirmasi. ${nextText}`;
+      } else nextText = '';
+      const shown = Math.min(v.idx+1, v.n);
+      stepNo = done ? `Selesai · ${v.n} langkah` : (prep ? `Persiapan ${v.idx+1} dari ${snap.prepCount}` : `Langkah ${shown} dari ${v.n}`);
+      if(!done && currentRecipe && currentSchedule && snap.signature !== currentSchedule.signature){
+        notice = `Timer mengikuti resep saat Start: ${snap.label} · ${snap.dose} g. Resep di layar sudah berubah.`;
+      }
+    }
+    set(els.state, 'state', stateText); els.stage.setAttribute('data-kind', stateKind);
+    set(els.clock, 'clock', clock);
+    set(els.step, 'step', stepText);
+    set(els.instr, 'instr', instr);
+    set(els.water, 'water', water); els.water.hidden = !water;
+    set(els.next, 'next', nextText); els.next.hidden = !nextText;
+    set(els.stepNo, 'stepno', stepNo);
+    const pct = Math.round((idle ? 0 : v.progress) * 100);
+    if(lastShown.pct!==pct){ lastShown.pct = pct; els.bar.style.width = pct+'%'; els.prog.setAttribute('aria-valuenow', String(pct)); }
+
+    const manual = (running || prep) && v.step && v.step.manual && !v.waitingForNext;
+    els.start.hidden = !idle;
+    els.start.disabled = idle && !currentSchedule;
+    els.confirm.hidden = !manual;
+    els.confirm.textContent = (running && v.step && v.step.type==='check') ? 'Seduhan selesai' : 'Lanjut setelah selesai';
+    els.pause.hidden = !running;
+    els.resume.hidden = !paused;
+    els.reset.hidden = idle;
+    els.notice.hidden = !notice; set(els.noticeText, 'notice', notice);
+
+    // transition highlight (brief, no flashing; reduced-motion users get a static outline)
+    if(v.landedAt && v.landedAt!==lastLanded && !idle){
+      lastLanded = v.landedAt;
+      els.stage.classList.remove('bt-hl'); void els.stage.offsetWidth; els.stage.classList.add('bt-hl');
+      clearTimeout(hlTimer); hlTimer = setTimeout(()=>els.stage.classList.remove('bt-hl'), 1600);
+    }
+    if(idle) els.stage.classList.remove('bt-hl');
+
+    if(!running && !paused && !prep) stopLoop();
+    // compact bar
+    const active = running || paused || prep;
+    const panelShown = root.isConnected && (observer ? panelVisible : true);
+    const showBar = active && !panelShown;
+    bar.hidden = !showBar;
+    document.body.classList.toggle('bt-bar-on', showBar);
+    if(showBar){
+      set(barEls.clock, 'bclock', clock);
+      set(barEls.state, 'bstate', stateText);
+      set(barEls.step, 'bstep', stepText);
+      barEls.toggle.hidden = prep;
+      barEls.toggle.textContent = paused ? 'Resume' : 'Pause';
+    }
+    refreshNotes();
+  }
+
+  api.refreshNotes = refreshNotes;
+  api.afterRender = function(r){
+    currentRecipe = r;
+    currentSchedule = r && !r.isEmpty ? buildTimerSchedule(r) : null;
+    if(!root) build();
+    const slot = document.getElementById('brewTimerSlot');
+    if(slot && root.parentNode!==slot) slot.appendChild(root);
+    root.hidden = false;
+    render(true);
+  };
+  return api;
+})();
 
 /* ============ INIT ============ */
 // First-time default: select "Dripnesia Recommended" as a real, actual recipe (state.style),
